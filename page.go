@@ -52,6 +52,5 @@ func (p *Page) fillDefaults() {
 }
 
 func (p *Page) GetExtension() string {
-	//TODO implement me
-	panic("implement me")
+	return p.Extension
 }

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"github.com/mangalorg/libmangal"
 	"github.com/philippgille/gokv"
+	"github.com/philippgille/gokv/syncmap"
 	"github.com/pkg/errors"
-	"github.com/spf13/afero"
 	lua "github.com/yuin/gopher-lua"
 	"gopkg.in/yaml.v3"
 	"io"
@@ -17,10 +17,16 @@ import (
 type Options struct {
 	HTTPClient *http.Client
 	HTTPStore  gokv.Store
-	FS         afero.Fs
 }
 
-func New(reader io.Reader, options *Options) (libmangal.ProviderLoader, error) {
+func DefaultOptions() *Options {
+	return &Options{
+		HTTPClient: &http.Client{},
+		HTTPStore:  syncmap.NewStore(syncmap.DefaultOptions),
+	}
+}
+
+func NewLoader(reader io.Reader, options *Options) (libmangal.ProviderLoader, error) {
 	contents, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
@@ -57,7 +63,7 @@ func extractInfo(script []byte) (*libmangal.ProviderInfo, error) {
 		return nil, err
 	}
 
-	if err := info.IsValid(); err != nil {
+	if err := info.Validate(); err != nil {
 		return nil, errors.Wrap(err, "info")
 	}
 
@@ -76,7 +82,8 @@ func (l Loader) Info() libmangal.ProviderInfo {
 
 func (l Loader) Load(ctx context.Context) (libmangal.Provider, error) {
 	provider := &Provider{
-		info: l.info,
+		info:    l.info,
+		options: l.options,
 	}
 
 	provider.state = newState(l.options)
@@ -96,9 +103,9 @@ func (l Loader) Load(ctx context.Context) (libmangal.Provider, error) {
 	}
 
 	for name, fn := range map[string]**lua.LFunction{
-		methodSearchMangas:  &provider.searchMangas,
-		methodMangaChapters: &provider.chapterPages,
-		methodChapterPages:  &provider.chapterPages,
+		methodSearchMangas:  &provider.fnSearchMangas,
+		methodMangaChapters: &provider.fnMangaChapters,
+		methodChapterPages:  &provider.fnChapterPages,
 	} {
 		var found bool
 		*fn, found = provider.state.GetGlobal(name).(*lua.LFunction)

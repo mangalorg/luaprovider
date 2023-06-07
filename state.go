@@ -2,17 +2,8 @@ package luaprovider
 
 import (
 	"github.com/mangalorg/luaprovider/lib"
-	"github.com/philippgille/gokv/syncmap"
 	lua "github.com/yuin/gopher-lua"
-	"net/http"
 )
-
-func DefaultOptions() *Options {
-	return &Options{
-		HTTPClient: &http.Client{},
-		HTTPStore:  syncmap.NewStore(syncmap.DefaultOptions),
-	}
-}
 
 func newState(options *Options) *lua.LState {
 	libs := []lua.LGFunction{
@@ -36,7 +27,6 @@ func newState(options *Options) *lua.LState {
 
 	lib.Preload(state, &lib.Options{
 		HTTPClient: options.HTTPClient,
-		FS:         options.FS,
 		HTTPStore:  options.HTTPStore,
 	})
 

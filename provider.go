@@ -18,21 +18,39 @@ type Provider struct {
 	options *Options
 	state   *lua.LState
 
-	searchMangas, mangaChapters, chapterPages *lua.LFunction
+	fnSearchMangas,
+	fnMangaChapters,
+	fnChapterPages *lua.LFunction
+}
+
+func (p Provider) SearchMangas(ctx context.Context, log libmangal.LogFunc, query string) ([]libmangal.Manga, error) {
+	return p.searchMangas(ctx, log, query)
+}
+
+func (p Provider) MangaChapters(ctx context.Context, log libmangal.LogFunc, manga libmangal.Manga) ([]libmangal.Chapter, error) {
+	return p.mangaChapters(ctx, log, manga.(*Manga))
+}
+
+func (p Provider) ChapterPages(ctx context.Context, log libmangal.LogFunc, chapter libmangal.Chapter) ([]libmangal.Page, error) {
+	return p.chapterPages(ctx, log, chapter.(*Chapter))
+}
+
+func (p Provider) GetImage(ctx context.Context, log libmangal.LogFunc, page libmangal.Page) (io.Reader, error) {
+	return p.getImage(ctx, log, page.(*Page))
 }
 
 func (p Provider) Info() libmangal.ProviderInfo {
 	return *p.info
 }
 
-func (p Provider) SearchMangas(
+func (p Provider) searchMangas(
 	ctx context.Context,
 	log libmangal.LogFunc,
 	query string,
 ) ([]libmangal.Manga, error) {
 	log(fmt.Sprintf("Searching mangas for %q", query))
 
-	values, err := p.evalFunction(ctx, p.searchMangas, lua.LString(query))
+	values, err := p.evalFunction(ctx, p.fnSearchMangas, lua.LString(query))
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +65,7 @@ func (p Provider) SearchMangas(
 			return nil, fmt.Errorf("table expected")
 		}
 
-		var manga Manga
+		var manga *Manga
 		if err = gluamapper.Map(table, &manga); err != nil {
 			return nil, err
 		}
@@ -57,20 +75,20 @@ func (p Provider) SearchMangas(
 		}
 
 		manga.table = table
-		mangas[i] = &manga
+		mangas[i] = manga
 	}
 
 	log(fmt.Sprintf("Found %d mangas", len(mangas)))
 	return mangas, nil
 }
 
-func (p Provider) MangaChapters(
+func (p Provider) mangaChapters(
 	ctx context.Context,
 	log libmangal.LogFunc,
 	manga *Manga,
 ) ([]libmangal.Chapter, error) {
 	log(fmt.Sprintf("Fetching chapters for %q", manga.Title))
-	values, err := p.evalFunction(ctx, p.mangaChapters, manga.table)
+	values, err := p.evalFunction(ctx, p.fnMangaChapters, manga.table)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +103,7 @@ func (p Provider) MangaChapters(
 			return nil, fmt.Errorf("table expected")
 		}
 
-		var chapter Chapter
+		var chapter *Chapter
 		if err = gluamapper.Map(table, &chapter); err != nil {
 			return nil, err
 		}
@@ -101,21 +119,21 @@ func (p Provider) MangaChapters(
 			chapter.Number = strconv.Itoa(i + 1)
 		}
 
-		chapters[i] = &chapter
+		chapters[i] = chapter
 	}
 
 	log(fmt.Sprintf("Found %d chapters", len(chapters)))
 	return chapters, nil
 }
 
-func (p Provider) ChapterPages(
+func (p Provider) chapterPages(
 	ctx context.Context,
 	log libmangal.LogFunc,
 	chapter *Chapter,
 ) ([]libmangal.Page, error) {
 	log(fmt.Sprintf("Fetching pages for %q", chapter.Title))
 
-	values, err := p.evalFunction(ctx, p.chapterPages, chapter.table)
+	values, err := p.evalFunction(ctx, p.fnChapterPages, chapter.table)
 	if err != nil {
 		return nil, err
 	}
@@ -130,25 +148,26 @@ func (p Provider) ChapterPages(
 			return nil, fmt.Errorf("table expected")
 		}
 
-		var page Page
+		var page *Page
 		if err = gluamapper.Map(table, &page); err != nil {
 			return nil, err
 		}
 
+		page.chapter = chapter
 		page.fillDefaults()
 
 		if err = page.Validate(); err != nil {
 			return nil, err
 		}
 
-		pages[i] = &page
+		pages[i] = page
 	}
 
 	log(fmt.Sprintf("Found %d pages", len(pages)))
 	return pages, nil
 }
 
-func (p Provider) GetImage(
+func (p Provider) getImage(
 	ctx context.Context,
 	log libmangal.LogFunc,
 	page *Page,
@@ -161,28 +180,26 @@ func (p Provider) GetImage(
 	}
 
 	log(fmt.Sprintf("Making HTTP GET request for %q", page.URL))
-	request, _ := http.NewRequestWithContext(ctx, http.MethodGet, page.URL, nil)
-
-	if page.Headers != nil {
-		for key, value := range page.Headers {
-			request.Header.Set(key, value)
-		}
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, page.URL, nil)
+	if err != nil {
+		return nil, err
 	}
 
-	if page.Cookies != nil {
-		for key, value := range page.Cookies {
-			request.AddCookie(&http.Cookie{Name: key, Value: value})
-		}
+	for key, value := range page.Headers {
+		request.Header.Set(key, value)
+	}
+
+	for key, value := range page.Cookies {
+		request.AddCookie(&http.Cookie{Name: key, Value: value})
 	}
 
 	response, err := p.options.HTTPClient.Do(request)
 	if err != nil {
 		return nil, err
 	}
+	defer response.Body.Close()
 
 	log("Got response")
-
-	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", response.StatusCode)
