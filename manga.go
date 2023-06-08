@@ -6,10 +6,10 @@ import (
 )
 
 type Manga struct {
-	Title    string
-	URL      string
-	ID       string
-	CoverURL string
+	Title string `gluamapper:"title"`
+	URL   string `gluamapper:"url"`
+	ID    string `gluamapper:"id"`
+	Cover string `gluamapper:"cover"`
 
 	table *lua.LTable
 }
@@ -39,5 +39,5 @@ func (m Manga) GetID() string {
 }
 
 func (m Manga) GetCoverURL() string {
-	return m.CoverURL
+	return m.Cover
 }

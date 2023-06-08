@@ -7,9 +7,9 @@ import (
 )
 
 type Chapter struct {
-	Title  string
-	URL    string
-	Number string
+	Title  string `gluamapper:"title"`
+	URL    string `gluamapper:"url"`
+	Number string `gluamapper:"number"`
 
 	manga *Manga
 	table *lua.LTable
