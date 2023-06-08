@@ -26,22 +26,6 @@ type Provider struct {
 	fnChapterPages *lua.LFunction
 }
 
-func (p Provider) MangaVolumes(ctx context.Context, log libmangal.LogFunc, manga libmangal.Manga) ([]libmangal.Volume, error) {
-	return p.mangaVolumes(ctx, log, manga.(*Manga))
-}
-
-func (p Provider) VolumeChapters(ctx context.Context, log libmangal.LogFunc, volume libmangal.Volume) ([]libmangal.Chapter, error) {
-	return p.volumeChapters(ctx, log, volume.(*Volume))
-}
-
-func (p Provider) ChapterPages(ctx context.Context, log libmangal.LogFunc, chapter libmangal.Chapter) ([]libmangal.Page, error) {
-	return p.chapterPages(ctx, log, chapter.(*Chapter))
-}
-
-func (p Provider) GetPageImage(ctx context.Context, log libmangal.LogFunc, page libmangal.Page) (io.Reader, error) {
-	return p.getPageImage(ctx, log, page.(*Page))
-}
-
 func (p Provider) Info() libmangal.ProviderInfo {
 	return *p.info
 }
@@ -80,6 +64,7 @@ func loadItems[Input IntoLValue, Output any](
 
 	var items = make([]Output, len(values))
 	for i, value := range values {
+		log(fmt.Sprintf("Parsing item %d", i))
 		table, ok := value.(*lua.LTable)
 		if !ok {
 			return nil, errors.Wrapf(fmt.Errorf("expected table, got %s", value.Type().String()), "parsing item %d", i)
@@ -93,7 +78,7 @@ func loadItems[Input IntoLValue, Output any](
 		items[i] = item
 	}
 
-	log(fmt.Sprintf("found %d items", len(items)))
+	log(fmt.Sprintf("Found %d items", len(items)))
 	return items, nil
 }
 
@@ -107,13 +92,15 @@ func (p Provider) SearchMangas(
 	ctx context.Context,
 	log libmangal.LogFunc,
 	query string,
-) ([]libmangal.Manga, error) {
-	return loadItems[luaString, libmangal.Manga](
+) ([]*Manga, error) {
+	log(fmt.Sprintf("Searching mangas with %q", query))
+
+	return loadItems(
 		ctx,
 		log,
 		p.state,
 		p.fnSearchMangas,
-		func(i int, table *lua.LTable) (libmangal.Manga, error) {
+		func(i int, table *lua.LTable) (*Manga, error) {
 			var manga *Manga
 			if err := gluamapper.Map(table, &manga); err != nil {
 				return nil, err
@@ -130,19 +117,19 @@ func (p Provider) SearchMangas(
 	)
 }
 
-func (p Provider) mangaVolumes(
+func (p Provider) MangaVolumes(
 	ctx context.Context,
 	log libmangal.LogFunc,
 	manga *Manga,
-) ([]libmangal.Volume, error) {
-	log(fmt.Sprintf("Fetching chapters for %q", manga.Title))
+) ([]*Volume, error) {
+	log(fmt.Sprintf("Fetching volumes for %q", manga.Title))
 
 	return loadItems(
 		ctx,
 		log,
 		p.state,
 		p.fnMangaVolumes,
-		func(_ int, table *lua.LTable) (libmangal.Volume, error) {
+		func(_ int, table *lua.LTable) (*Volume, error) {
 			var volume *Volume
 
 			if err := gluamapper.Map(table, &volume); err != nil {
@@ -153,23 +140,27 @@ func (p Provider) mangaVolumes(
 				return nil, fmt.Errorf("invalid volume number: %d", volume.Number)
 			}
 
+			volume.table = table
+			volume.manga = manga
 			return volume, nil
 		},
 		manga,
 	)
 }
 
-func (p Provider) volumeChapters(
+func (p Provider) VolumeChapters(
 	ctx context.Context,
 	log libmangal.LogFunc,
 	volume *Volume,
-) ([]libmangal.Chapter, error) {
+) ([]*Chapter, error) {
+	log(fmt.Sprintf("Fetching chapters for volume %d", volume.Number))
+
 	return loadItems(
 		ctx,
 		log,
 		p.state,
 		p.fnVolumeChapters,
-		func(i int, table *lua.LTable) (libmangal.Chapter, error) {
+		func(i int, table *lua.LTable) (*Chapter, error) {
 			var chapter *Chapter
 			if err := gluamapper.Map(table, &chapter); err != nil {
 				return nil, err
@@ -179,24 +170,23 @@ func (p Provider) volumeChapters(
 				return nil, err
 			}
 
-			chapter.table = table
-			chapter.volume = volume
-
 			if chapter.Number == "" {
 				chapter.Number = strconv.Itoa(i + 1)
 			}
 
+			chapter.table = table
+			chapter.volume = volume
 			return chapter, nil
 		},
 		volume,
 	)
 }
 
-func (p Provider) chapterPages(
+func (p Provider) ChapterPages(
 	ctx context.Context,
 	log libmangal.LogFunc,
 	chapter *Chapter,
-) ([]libmangal.Page, error) {
+) ([]*Page, error) {
 	log(fmt.Sprintf("Fetching pages for %q", chapter.Title))
 
 	return loadItems(
@@ -204,7 +194,7 @@ func (p Provider) chapterPages(
 		log,
 		p.state,
 		p.fnChapterPages,
-		func(i int, table *lua.LTable) (libmangal.Page, error) {
+		func(i int, table *lua.LTable) (*Page, error) {
 			var page *Page
 			if err := gluamapper.Map(table, &page); err != nil {
 				return nil, err
@@ -223,7 +213,7 @@ func (p Provider) chapterPages(
 	)
 }
 
-func (p Provider) getPageImage(
+func (p Provider) GetPageImage(
 	ctx context.Context,
 	log libmangal.LogFunc,
 	page *Page,

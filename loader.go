@@ -26,7 +26,7 @@ func DefaultOptions() *Options {
 	}
 }
 
-func NewLoader(reader io.Reader, options *Options) (libmangal.ProviderLoader, error) {
+func NewLoader(reader io.Reader, options *Options) (libmangal.ProviderLoader[*Manga, *Volume, *Chapter, *Page], error) {
 	contents, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func (l Loader) Info() libmangal.ProviderInfo {
 	return *l.info
 }
 
-func (l Loader) Load(ctx context.Context) (libmangal.Provider, error) {
+func (l Loader) Load(ctx context.Context) (libmangal.Provider[*Manga, *Volume, *Chapter, *Page], error) {
 	provider := &Provider{
 		info:    l.info,
 		options: l.options,
@@ -104,8 +104,8 @@ func (l Loader) Load(ctx context.Context) (libmangal.Provider, error) {
 
 	for name, fn := range map[string]**lua.LFunction{
 		methodSearchMangas:   &provider.fnSearchMangas,
-		methodMangaVolumes:   &provider.fnVolumeChapters,
-		methodVolumeChapters: &provider.fnMangaVolumes,
+		methodMangaVolumes:   &provider.fnMangaVolumes,
+		methodVolumeChapters: &provider.fnVolumeChapters,
 		methodChapterPages:   &provider.fnChapterPages,
 	} {
 		var found bool
