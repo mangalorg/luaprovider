@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/mangalorg/libmangal"
+	"github.com/pkg/errors"
+	"github.com/samber/lo"
 	"github.com/yuin/gluamapper"
 	lua "github.com/yuin/gopher-lua"
 	"io"
@@ -19,111 +21,175 @@ type Provider struct {
 	state   *lua.LState
 
 	fnSearchMangas,
-	fnMangaChapters,
+	fnMangaVolumes,
+	fnVolumeChapters,
 	fnChapterPages *lua.LFunction
 }
 
-func (p Provider) SearchMangas(ctx context.Context, log libmangal.LogFunc, query string) ([]libmangal.Manga, error) {
-	return p.searchMangas(ctx, log, query)
+func (p Provider) MangaVolumes(ctx context.Context, log libmangal.LogFunc, manga libmangal.Manga) ([]libmangal.Volume, error) {
+	return p.mangaVolumes(ctx, log, manga.(*Manga))
 }
 
-func (p Provider) MangaChapters(ctx context.Context, log libmangal.LogFunc, manga libmangal.Manga) ([]libmangal.Chapter, error) {
-	return p.mangaChapters(ctx, log, manga.(*Manga))
+func (p Provider) VolumeChapters(ctx context.Context, log libmangal.LogFunc, volume libmangal.Volume) ([]libmangal.Chapter, error) {
+	return p.volumeChapters(ctx, log, volume.(*Volume))
 }
 
 func (p Provider) ChapterPages(ctx context.Context, log libmangal.LogFunc, chapter libmangal.Chapter) ([]libmangal.Page, error) {
 	return p.chapterPages(ctx, log, chapter.(*Chapter))
 }
 
-func (p Provider) GetImage(ctx context.Context, log libmangal.LogFunc, page libmangal.Page) (io.Reader, error) {
-	return p.getImage(ctx, log, page.(*Page))
+func (p Provider) GetPageImage(ctx context.Context, log libmangal.LogFunc, page libmangal.Page) (io.Reader, error) {
+	return p.getPageImage(ctx, log, page.(*Page))
 }
 
 func (p Provider) Info() libmangal.ProviderInfo {
 	return *p.info
 }
 
-func (p Provider) searchMangas(
+type IntoLValue interface {
+	IntoLValue() lua.LValue
+}
+
+func loadItems[Input IntoLValue, Output any](
+	ctx context.Context,
+	log libmangal.LogFunc,
+	state *lua.LState,
+	lfunc *lua.LFunction,
+	convert func(int, *lua.LTable) (Output, error),
+	args ...Input,
+) ([]Output, error) {
+	state.SetContext(ctx)
+	err := state.CallByParam(lua.P{
+		Fn:      lfunc,
+		NRet:    1,
+		Protect: true,
+	}, lo.Map(args, func(arg Input, _ int) lua.LValue {
+		return arg.IntoLValue()
+	})...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	output := state.CheckTable(-1)
+
+	var values []lua.LValue
+	output.ForEach(func(_ lua.LValue, value lua.LValue) {
+		values = append(values, value)
+	})
+
+	var items = make([]Output, len(values))
+	for i, value := range values {
+		table, ok := value.(*lua.LTable)
+		if !ok {
+			return nil, errors.Wrapf(fmt.Errorf("expected table, got %s", value.Type().String()), "parsing item %d", i)
+		}
+
+		item, err := convert(i, table)
+		if err != nil {
+			return nil, errors.Wrapf(err, "parsing item %d", i)
+		}
+
+		items[i] = item
+	}
+
+	log(fmt.Sprintf("found %d items", len(items)))
+	return items, nil
+}
+
+type luaString string
+
+func (l luaString) IntoLValue() lua.LValue {
+	return lua.LString(l)
+}
+
+func (p Provider) SearchMangas(
 	ctx context.Context,
 	log libmangal.LogFunc,
 	query string,
 ) ([]libmangal.Manga, error) {
-	log(fmt.Sprintf("Searching mangas for %q", query))
+	return loadItems[luaString, libmangal.Manga](
+		ctx,
+		log,
+		p.state,
+		p.fnSearchMangas,
+		func(i int, table *lua.LTable) (libmangal.Manga, error) {
+			var manga *Manga
+			if err := gluamapper.Map(table, &manga); err != nil {
+				return nil, err
+			}
 
-	values, err := p.evalFunction(ctx, p.fnSearchMangas, lua.LString(query))
-	if err != nil {
-		return nil, err
-	}
+			if err := manga.Validate(); err != nil {
+				return nil, err
+			}
 
-	var mangas = make([]libmangal.Manga, len(values))
-	for i, value := range values {
-		log(fmt.Sprintf("Parsing manga #%03d", i+1))
-
-		table, ok := value.(*lua.LTable)
-		if !ok {
-			// TODO: add more descriptive message
-			return nil, fmt.Errorf("table expected")
-		}
-
-		var manga *Manga
-		if err = gluamapper.Map(table, &manga); err != nil {
-			return nil, err
-		}
-
-		if err = manga.Validate(); err != nil {
-			return nil, err
-		}
-
-		manga.table = table
-		mangas[i] = manga
-	}
-
-	log(fmt.Sprintf("Found %d mangas", len(mangas)))
-	return mangas, nil
+			manga.table = table
+			return manga, nil
+		},
+		luaString(query),
+	)
 }
 
-func (p Provider) mangaChapters(
+func (p Provider) mangaVolumes(
 	ctx context.Context,
 	log libmangal.LogFunc,
 	manga *Manga,
-) ([]libmangal.Chapter, error) {
+) ([]libmangal.Volume, error) {
 	log(fmt.Sprintf("Fetching chapters for %q", manga.Title))
-	values, err := p.evalFunction(ctx, p.fnMangaChapters, manga.table)
-	if err != nil {
-		return nil, err
-	}
 
-	var chapters = make([]libmangal.Chapter, len(values))
-	for i, value := range values {
-		log(fmt.Sprintf("Parsing chapter #%04d", i))
+	return loadItems(
+		ctx,
+		log,
+		p.state,
+		p.fnMangaVolumes,
+		func(_ int, table *lua.LTable) (libmangal.Volume, error) {
+			var volume *Volume
 
-		table, ok := value.(*lua.LTable)
-		if !ok {
-			// TODO: add more descriptive message
-			return nil, fmt.Errorf("table expected")
-		}
+			if err := gluamapper.Map(table, &volume); err != nil {
+				return nil, err
+			}
 
-		var chapter *Chapter
-		if err = gluamapper.Map(table, &chapter); err != nil {
-			return nil, err
-		}
+			if volume.Number <= 0 {
+				return nil, fmt.Errorf("invalid volume number: %d", volume.Number)
+			}
 
-		if err = chapter.Validate(); err != nil {
-			return nil, err
-		}
+			return volume, nil
+		},
+		manga,
+	)
+}
 
-		chapter.table = table
-		chapter.manga = manga
+func (p Provider) volumeChapters(
+	ctx context.Context,
+	log libmangal.LogFunc,
+	volume *Volume,
+) ([]libmangal.Chapter, error) {
+	return loadItems(
+		ctx,
+		log,
+		p.state,
+		p.fnVolumeChapters,
+		func(i int, table *lua.LTable) (libmangal.Chapter, error) {
+			var chapter *Chapter
+			if err := gluamapper.Map(table, &chapter); err != nil {
+				return nil, err
+			}
 
-		if chapter.Number == "" {
-			chapter.Number = strconv.Itoa(i + 1)
-		}
+			if err := chapter.Validate(); err != nil {
+				return nil, err
+			}
 
-		chapters[i] = chapter
-	}
+			chapter.table = table
+			chapter.volume = volume
 
-	log(fmt.Sprintf("Found %d chapters", len(chapters)))
-	return chapters, nil
+			if chapter.Number == "" {
+				chapter.Number = strconv.Itoa(i + 1)
+			}
+
+			return chapter, nil
+		},
+		volume,
+	)
 }
 
 func (p Provider) chapterPages(
@@ -133,41 +199,31 @@ func (p Provider) chapterPages(
 ) ([]libmangal.Page, error) {
 	log(fmt.Sprintf("Fetching pages for %q", chapter.Title))
 
-	values, err := p.evalFunction(ctx, p.fnChapterPages, chapter.table)
-	if err != nil {
-		return nil, err
-	}
+	return loadItems(
+		ctx,
+		log,
+		p.state,
+		p.fnChapterPages,
+		func(i int, table *lua.LTable) (libmangal.Page, error) {
+			var page *Page
+			if err := gluamapper.Map(table, &page); err != nil {
+				return nil, err
+			}
 
-	var pages = make([]libmangal.Page, len(values))
-	for i, value := range values {
-		log(fmt.Sprintf("Parsing page #%03d", i+1))
+			page.chapter = chapter
+			page.fillDefaults()
 
-		table, ok := value.(*lua.LTable)
-		if !ok {
-			// TODO: add more descriptive message
-			return nil, fmt.Errorf("table expected")
-		}
+			if err := page.Validate(); err != nil {
+				return nil, err
+			}
 
-		var page *Page
-		if err = gluamapper.Map(table, &page); err != nil {
-			return nil, err
-		}
-
-		page.chapter = chapter
-		page.fillDefaults()
-
-		if err = page.Validate(); err != nil {
-			return nil, err
-		}
-
-		pages[i] = page
-	}
-
-	log(fmt.Sprintf("Found %d pages", len(pages)))
-	return pages, nil
+			return page, nil
+		},
+		chapter,
+	)
 }
 
-func (p Provider) getImage(
+func (p Provider) getPageImage(
 	ctx context.Context,
 	log libmangal.LogFunc,
 	page *Page,
@@ -221,30 +277,4 @@ func (p Provider) getImage(
 	}
 
 	return bytes.NewReader(buffer), nil
-}
-
-func (p Provider) evalFunction(
-	ctx context.Context,
-	fn *lua.LFunction,
-	input lua.LValue,
-) (output []lua.LValue, err error) {
-	p.state.SetContext(ctx)
-	err = p.state.CallByParam(lua.P{
-		Fn:      fn,
-		NRet:    1,
-		Protect: true,
-	}, input)
-
-	if err != nil {
-		return nil, err
-	}
-
-	p.
-		state.
-		CheckTable(-1).
-		ForEach(func(_, value lua.LValue) {
-			output = append(output, value)
-		})
-
-	return
 }

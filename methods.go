@@ -1,7 +1,8 @@
 package luaprovider
 
 const (
-	methodSearchMangas  = "SearchMangas"
-	methodMangaChapters = "MangaChapters"
-	methodChapterPages  = "ChapterPages"
+	methodSearchMangas   = "SearchMangas"
+	methodMangaVolumes   = "MangaVolumes"
+	methodVolumeChapters = "VolumeChapters"
+	methodChapterPages   = "ChapterPages"
 )

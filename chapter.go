@@ -11,8 +11,12 @@ type Chapter struct {
 	URL    string `gluamapper:"url"`
 	Number string `gluamapper:"number"`
 
-	manga *Manga
-	table *lua.LTable
+	volume *Volume
+	table  *lua.LTable
+}
+
+func (c Chapter) IntoLValue() lua.LValue {
+	return c.table
 }
 
 func (c Chapter) Validate() error {
@@ -23,18 +27,11 @@ func (c Chapter) Validate() error {
 	return nil
 }
 
-func (c Chapter) GetTitle() string {
-	return c.Title
-}
-
-func (c Chapter) GetURL() string {
-	return c.URL
-}
-
-func (c Chapter) GetNumber() string {
-	return c.Number
-}
-
-func (c Chapter) GetManga() libmangal.Manga {
-	return c.manga
+func (c Chapter) Info() libmangal.ChapterInfo {
+	return libmangal.ChapterInfo{
+		Title:      c.Title,
+		URL:        c.URL,
+		Number:     c.Number,
+		VolumeInfo: c.volume.Info,
+	}
 }

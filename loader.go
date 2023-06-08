@@ -103,9 +103,10 @@ func (l Loader) Load(ctx context.Context) (libmangal.Provider, error) {
 	}
 
 	for name, fn := range map[string]**lua.LFunction{
-		methodSearchMangas:  &provider.fnSearchMangas,
-		methodMangaChapters: &provider.fnMangaChapters,
-		methodChapterPages:  &provider.fnChapterPages,
+		methodSearchMangas:   &provider.fnSearchMangas,
+		methodMangaVolumes:   &provider.fnVolumeChapters,
+		methodVolumeChapters: &provider.fnMangaVolumes,
+		methodChapterPages:   &provider.fnChapterPages,
 	} {
 		var found bool
 		*fn, found = provider.state.GetGlobal(name).(*lua.LFunction)
