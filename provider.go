@@ -11,7 +11,6 @@ import (
 	lua "github.com/yuin/gopher-lua"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 )
 
@@ -106,8 +105,12 @@ func (p Provider) SearchMangas(
 				return nil, err
 			}
 
-			if err := manga.Validate(); err != nil {
-				return nil, err
+			if manga.ID == "" {
+				return nil, errors.New("id must be non-empty")
+			}
+
+			if manga.Title == "" {
+				return nil, errors.New("title must be non-empty")
 			}
 
 			manga.table = table
@@ -166,12 +169,12 @@ func (p Provider) VolumeChapters(
 				return nil, err
 			}
 
-			if err := chapter.Validate(); err != nil {
-				return nil, err
+			if chapter.Title == "" {
+				return nil, errors.New("title must be non-empty")
 			}
 
-			if chapter.Number == "" {
-				chapter.Number = strconv.Itoa(i + 1)
+			if chapter.Number == 0 {
+				chapter.Number = float32(i)
 			}
 
 			chapter.table = table
@@ -201,10 +204,26 @@ func (p Provider) ChapterPages(
 			}
 
 			page.chapter = chapter
-			page.fillDefaults()
 
-			if err := page.Validate(); err != nil {
-				return nil, err
+			if page.Extension == "" {
+				page.Extension = ".jpg"
+			}
+
+			if page.Headers == nil {
+				page.Headers = make(map[string]string)
+				page.Headers["Referer"] = page.chapter.URL
+				page.Headers["Accept"] = "image/webp,image/apng,image/*,*/*;q=0.8"
+
+				// TODO: generate random user-agent
+				page.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+			}
+
+			if page.URL == "" && page.Data == "" {
+				return nil, errors.New("either URL or Data must be set")
+			}
+
+			if !fileExtensionRegex.MatchString(page.Extension) {
+				return nil, fmt.Errorf("invalid page extension: %s", page.Extension)
 			}
 
 			return page, nil

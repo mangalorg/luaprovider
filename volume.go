@@ -12,13 +12,16 @@ type Volume struct {
 	table *lua.LTable
 }
 
+func (v Volume) Manga() libmangal.Manga {
+	return v.manga
+}
+
 func (v Volume) IntoLValue() lua.LValue {
 	return v.table
 }
 
 func (v Volume) Info() libmangal.VolumeInfo {
 	return libmangal.VolumeInfo{
-		Number:    v.Number,
-		MangaInfo: v.manga.Info,
+		Number: v.Number,
 	}
 }
