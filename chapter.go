@@ -18,7 +18,7 @@ func (c Chapter) Volume() libmangal.Volume {
 	return c.volume
 }
 
-func (c Chapter) ComicInfoXml() (comicInfo libmangal.ComicInfoXml, ok bool) {
+func (c Chapter) ComicInfoXml(libmangal.ComicInfoXmlOptions) (comicInfo libmangal.ComicInfoXml, ok bool) {
 	return
 }
 
