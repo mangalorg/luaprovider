@@ -216,8 +216,8 @@ func (p Provider) ChapterPages(
 				page.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
 			}
 
-			if page.URL == "" && page.Data == "" {
-				return Page{}, errors.New("either URL or Data must be set")
+			if page.URL == "" {
+				return Page{}, errors.New("url must be set")
 			}
 
 			if !fileExtensionRegex.MatchString(page.Extension) {
@@ -236,11 +236,6 @@ func (p Provider) GetPageImage(
 	page Page,
 ) ([]byte, error) {
 	log("Getting image for page")
-
-	if page.Data != "" {
-		log("Page already contains image, returning")
-		return []byte(page.Data), nil
-	}
 
 	log(fmt.Sprintf("Making HTTP GET request for %q", page.URL))
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, page.URL, nil)

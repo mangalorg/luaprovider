@@ -47,7 +47,7 @@ func NewLoader(reader io.Reader, options Options) (libmangal.ProviderLoader[Mang
 func extractInfo(script []byte) (libmangal.ProviderInfo, error) {
 	var (
 		infoLines  [][]byte
-		infoPrefix = []byte("--|")
+		infoPrefix = []byte("--->")
 	)
 
 	for _, line := range bytes.Split(script, []byte("\n")) {

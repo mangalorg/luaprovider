@@ -6,12 +6,12 @@ import (
 )
 
 type Manga struct {
-	Title   string `gluamapper:"title"`
-	Anilist string `gluamapper:"anilist"`
-	URL     string `gluamapper:"url"`
-	ID      string `gluamapper:"id"`
-	Cover   string `gluamapper:"cover"`
-	Banner  string `gluamapper:"banner"`
+	Title         string `gluamapper:"title"`
+	AnilistSearch string `gluamapper:"anilist_search"`
+	URL           string `gluamapper:"url"`
+	ID            string `gluamapper:"id"`
+	Cover         string `gluamapper:"cover"`
+	Banner        string `gluamapper:"banner"`
 
 	table *lua.LTable
 }
@@ -27,7 +27,7 @@ func (m Manga) IntoLValue() lua.LValue {
 func (m Manga) Info() libmangal.MangaInfo {
 	return libmangal.MangaInfo{
 		Title:         m.Title,
-		AnilistSearch: m.Anilist,
+		AnilistSearch: m.AnilistSearch,
 		URL:           m.URL,
 		ID:            m.ID,
 		Cover:         m.Cover,

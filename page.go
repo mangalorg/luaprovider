@@ -13,11 +13,6 @@ type Page struct {
 	// URL is the url of the page image
 	URL string `gluamapper:"url"`
 
-	// Data is the raw data of the page image.
-	// It will have a higher priority than URL if it is not empty.
-	// string is used instead of []byte because lua cannot handle []byte.
-	Data string `gluamapper:"data"`
-
 	Headers map[string]string `gluamapper:"headers"`
 	Cookies map[string]string `gluamapper:"cookies"`
 
