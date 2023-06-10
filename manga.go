@@ -11,6 +11,7 @@ type Manga struct {
 	URL     string `gluamapper:"url"`
 	ID      string `gluamapper:"id"`
 	Cover   string `gluamapper:"cover"`
+	Banner  string `gluamapper:"banner"`
 
 	table *lua.LTable
 }
@@ -30,5 +31,6 @@ func (m Manga) Info() libmangal.MangaInfo {
 		URL:           m.URL,
 		ID:            m.ID,
 		Cover:         m.Cover,
+		Banner:        m.Banner,
 	}
 }

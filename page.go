@@ -24,13 +24,10 @@ type Page struct {
 	chapter *Chapter
 }
 
-func (p *Page) Chapter() libmangal.Chapter {
+func (p Page) Chapter() libmangal.Chapter {
 	return p.chapter
 }
 
-func (p *Page) fillDefaults() {
-}
-
-func (p *Page) GetExtension() string {
+func (p Page) GetExtension() string {
 	return p.Extension
 }

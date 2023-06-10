@@ -19,14 +19,14 @@ type Options struct {
 	HTTPStore  gokv.Store
 }
 
-func DefaultOptions() *Options {
-	return &Options{
+func DefaultOptions() Options {
+	return Options{
 		HTTPClient: &http.Client{},
 		HTTPStore:  syncmap.NewStore(syncmap.DefaultOptions),
 	}
 }
 
-func NewLoader(reader io.Reader, options *Options) (libmangal.ProviderLoader[*Manga, *Volume, *Chapter, *Page], error) {
+func NewLoader(reader io.Reader, options Options) (libmangal.ProviderLoader[Manga, Volume, Chapter, Page], error) {
 	contents, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func NewLoader(reader io.Reader, options *Options) (libmangal.ProviderLoader[*Ma
 	}, nil
 }
 
-func extractInfo(script []byte) (*libmangal.ProviderInfo, error) {
+func extractInfo(script []byte) (libmangal.ProviderInfo, error) {
 	var (
 		infoLines  [][]byte
 		infoPrefix = []byte("--|")
@@ -60,28 +60,28 @@ func extractInfo(script []byte) (*libmangal.ProviderInfo, error) {
 	err := yaml.Unmarshal(bytes.Join(infoLines, []byte("\n")), &info)
 
 	if err != nil {
-		return nil, err
+		return libmangal.ProviderInfo{}, err
 	}
 
 	if err := info.Validate(); err != nil {
-		return nil, errors.Wrap(err, "info")
+		return libmangal.ProviderInfo{}, errors.Wrap(err, "info")
 	}
 
-	return &info, nil
+	return info, nil
 }
 
 type Loader struct {
-	options *Options
-	info    *libmangal.ProviderInfo
+	options Options
+	info    libmangal.ProviderInfo
 	script  []byte
 }
 
 func (l Loader) Info() libmangal.ProviderInfo {
-	return *l.info
+	return l.info
 }
 
-func (l Loader) Load(ctx context.Context) (libmangal.Provider[*Manga, *Volume, *Chapter, *Page], error) {
-	provider := &Provider{
+func (l Loader) Load(ctx context.Context) (libmangal.Provider[Manga, Volume, Chapter, Page], error) {
+	provider := Provider{
 		info:    l.info,
 		options: l.options,
 	}

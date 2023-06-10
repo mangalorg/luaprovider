@@ -5,7 +5,7 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-func newState(options *Options) *lua.LState {
+func newState(options Options) *lua.LState {
 	libs := []lua.LGFunction{
 		lua.OpenBase,
 		lua.OpenTable,
