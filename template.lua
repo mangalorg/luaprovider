@@ -1,6 +1,6 @@
 ---> name: Name
 ---> description: Description
----> version: v0.1.0
+---> version: 0.1.0
 ---> website: https://github.com/mangalorg/luaprovider
 
 ---@alias Manga { id: string, title: string, url: string?, cover: string?, banner: string?, anilist_search: string?, [any]: any }

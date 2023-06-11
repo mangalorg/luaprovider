@@ -31,6 +31,8 @@ type IntoLValue interface {
 	IntoLValue() lua.LValue
 }
 
+// loadItems will run the given lua function,
+// perform type checking and apply conversion function for each item.
 func loadItems[Input IntoLValue, Output any](
 	ctx context.Context,
 	log libmangal.LogFunc,
@@ -79,6 +81,8 @@ func loadItems[Input IntoLValue, Output any](
 	return items, nil
 }
 
+// luaString wraps string to make IntoLValue method available.
+// Required by the loadItems function.
 type luaString string
 
 func (l luaString) IntoLValue() lua.LValue {
@@ -203,8 +207,16 @@ func (p Provider) ChapterPages(
 
 			page.chapter = &chapter
 
+			if page.URL == "" {
+				return Page{}, errors.New("url must be set")
+			}
+
 			if page.Extension == "" {
 				page.Extension = ".jpg"
+			}
+
+			if !fileExtensionRegex.MatchString(page.Extension) {
+				return Page{}, fmt.Errorf("invalid page extension: %s", page.Extension)
 			}
 
 			if page.Headers == nil {
@@ -214,14 +226,6 @@ func (p Provider) ChapterPages(
 
 				// TODO: generate random user-agent
 				page.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
-			}
-
-			if page.URL == "" {
-				return Page{}, errors.New("url must be set")
-			}
-
-			if !fileExtensionRegex.MatchString(page.Extension) {
-				return Page{}, fmt.Errorf("invalid page extension: %s", page.Extension)
 			}
 
 			return page, nil

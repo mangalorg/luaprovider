@@ -10,7 +10,6 @@ import (
 	"github.com/pkg/errors"
 	lua "github.com/yuin/gopher-lua"
 	"gopkg.in/yaml.v3"
-	"io"
 	"net/http"
 )
 
@@ -26,13 +25,11 @@ func DefaultOptions() Options {
 	}
 }
 
-func NewLoader(reader io.Reader, options Options) (libmangal.ProviderLoader[Manga, Volume, Chapter, Page], error) {
-	contents, err := io.ReadAll(reader)
-	if err != nil {
-		return nil, err
-	}
-
-	info, err := extractInfo(contents)
+// NewLoader creates new lua provider loader for the given script.
+//
+// It won't run the script itself.
+func NewLoader(script []byte, options Options) (libmangal.ProviderLoader[Manga, Volume, Chapter, Page], error) {
+	info, err := extractInfo(script)
 	if err != nil {
 		return nil, err
 	}
@@ -40,10 +37,13 @@ func NewLoader(reader io.Reader, options Options) (libmangal.ProviderLoader[Mang
 	return Loader{
 		options: options,
 		info:    info,
-		script:  contents,
+		script:  script,
 	}, nil
 }
 
+// extractInfo extracts provider information from the given script.
+//
+// Information lines must start with the `--->` followed by the valid YAML fields
 func extractInfo(script []byte) (libmangal.ProviderInfo, error) {
 	var (
 		infoLines  [][]byte

@@ -101,9 +101,9 @@ func Lib() *luadoc.Lib {
 				},
 			},
 			{
-				Name:        "encode",
+				Name:        "string",
 				Description: "Encodes the values into \"URL encoded\" form sorted by key.",
-				Value:       urlValuesEncode,
+				Value:       urlValuesString,
 				Returns: []*luadoc.Param{
 					{
 						Name:        "encoded",
@@ -113,9 +113,9 @@ func Lib() *luadoc.Lib {
 				},
 			},
 			{
-				Name:        "decode",
-				Description: "Creates a values from the URL encoded form. It is the inverse operation of encode.",
-				Value:       urlValuesDecode,
+				Name:        "parse",
+				Description: "Creates a values from the URL encoded form. It is the inverse operation of string.",
+				Value:       urlValuesParse,
 				Params: []*luadoc.Param{
 					{
 						Name:        "encoded",
@@ -140,7 +140,7 @@ func Lib() *luadoc.Lib {
 		Methods: []*luadoc.Method{
 			{
 				Name:        "hostname",
-				Description: "",
+				Description: "Return hostname without port numbers.",
 				Value:       urlURLHostname,
 				Returns: []*luadoc.Param{
 					{
@@ -152,7 +152,7 @@ func Lib() *luadoc.Lib {
 			},
 			{
 				Name:        "parse",
-				Description: "",
+				Description: "Parses a URL in the context of the receiver. The provided URL may be relative or absolute.",
 				Value:       urlURLParse,
 				Params: []*luadoc.Param{
 					{
@@ -171,7 +171,7 @@ func Lib() *luadoc.Lib {
 			},
 			{
 				Name:        "string",
-				Description: "",
+				Description: "Reassembles the URL into a valid URL string.",
 				Value:       urlURLString,
 				Returns: []*luadoc.Param{
 					{
@@ -183,7 +183,7 @@ func Lib() *luadoc.Lib {
 			},
 			{
 				Name:        "join_path",
-				Description: "",
+				Description: "Returns a new URL with the provided path elements joined to any existing path and the resulting path cleaned of any ./ or ../ elements. Any sequences of multiple / characters will be reduced to a single /.",
 				Value:       urlURLJoinPath,
 				Params: []*luadoc.Param{
 					{
@@ -435,13 +435,13 @@ func urlValuesGet(L *lua.LState) int {
 	return 1
 }
 
-func urlValuesEncode(L *lua.LState) int {
+func urlValuesString(L *lua.LState) int {
 	v := checkValues(L, 1)
 	L.Push(lua.LString(v.Encode()))
 	return 1
 }
 
-func urlValuesDecode(L *lua.LState) int {
+func urlValuesParse(L *lua.LState) int {
 	s := L.CheckString(1)
 	v, err := url.ParseQuery(s)
 	if err != nil {

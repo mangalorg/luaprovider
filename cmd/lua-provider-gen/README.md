@@ -15,6 +15,8 @@ go install .
 Usage of lua-provider-gen:
   -dir string
     	output directory (default ".")
-  -name string
-    	name of the created provider (default "provider")
+  -provider
+    	generate provider.lua template
+  -sdk
+    	generate sdk.lua file for language server
 ```
