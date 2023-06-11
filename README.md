@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="150px" src="https://github.com/mangalorg/luaprovider/assets/62389790/219a58d4-1ca9-484f-a34b-389a2486fed0">
+  <img width="150px" alt="a logo depicting a moon" src="https://github.com/mangalorg/luaprovider/assets/62389790/219a58d4-1ca9-484f-a34b-389a2486fed0">
   <h1>Lua Provider</h1>
 </div>
 
@@ -13,13 +13,13 @@ that uses [Lua](https://www.lua.org/) scripts to create *subproviders*.
 It uses [native go implementation of the Lua interpreter](https://github.com/yuin/gopher-lua)
 and provides a set of libraries that can be used in the scripts.
 
-Take a look at [official lua scripts repository](https://github.com/mangalorg/saturno)
+Take a look at [the official lua scripts repository](https://github.com/mangalorg/saturno)
 
 ## Features
 
-- Built-in Lua VM without CGO
+- Built-in Lua VM without CGO with [gopher-lua](https://github.com/yuin/gopher-lua)
 - Batteries-included library
-- Ships with [CLI tool](./cmd/lua-provider-gen) to generate script template
+- Ships with [CLI helper tools](./cmd) for generating templates & probing.
 - Luadoc generation which enables autocompletion for you IDE
 - Script template generation
 
@@ -31,6 +31,8 @@ Take a look at [official lua scripts repository](https://github.com/mangalorg/sa
 > [VSCode extension](https://marketplace.visualstudio.com/items?itemName=sumneko.lua)
 
 ## Scripts
+
+### Overview
 
 See [examples of scripts](https://github.com/mangalorg/saturno/tree/main/luas)
 
@@ -67,7 +69,7 @@ Notice the four required global functions
 
 Also, each script **must** contain the following lines:
 
-```
+```lua
 ---> name: Script name
 ---> description: Script description
 ---> version: v0.1.0
@@ -90,6 +92,9 @@ local sdk = require("sdk")
 
 Which provides these packages:
 
+<details>
+<summary>Packages</summary>
+
 - [crypto](./lib/crypto)
   - [md5](./lib/crypto/md5)
   - [sha1](./lib/crypto/sha1)
@@ -107,3 +112,21 @@ Which provides these packages:
 - [strings](./lib/strings)
 - [levenshtein](./lib/levenshtein)
 - [util](./lib/util)
+
+Headless browser coming soon...
+</details>
+
+### Developing
+
+Install [lua-provider-gen](./cmd/lua-provider-gen) helper tool
+
+Then use it to generate a new workflow
+
+```bash
+lua-provider-gen -sdk -provider
+```
+
+This command will create the following files:
+
+- `sdk.lua` - gives IDE autocompletion
+- `provider.lua` - a provider script template
