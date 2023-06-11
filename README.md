@@ -1,10 +1,16 @@
 # Lua Provider
 
+> **Warning**
+> 
+> This is a beta software. The API is not stable and may change at any time.
+
 This is a generic provider for [libmangal](https://github.com/mangalorg/libmangal)
 that uses [Lua](https://www.lua.org/) scripts to create *subproviders*.
 
 It uses [native go implementation of the Lua interpreter](https://github.com/yuin/gopher-lua)
 and provides a set of libraries that can be used in the scripts.
+
+Take a look at [official lua scripts repository](https://github.com/mangalorg/saturno)
 
 ## Features
 
@@ -22,6 +28,8 @@ and provides a set of libraries that can be used in the scripts.
 > [VSCode extension](https://marketplace.visualstudio.com/items?itemName=sumneko.lua)
 
 ## Scripts
+
+See [examples of scripts](https://github.com/mangalorg/saturno/tree/main/luas)
 
 Scripts must look like this:
 
