@@ -1,4 +1,7 @@
-# Lua Provider
+<div align="center">
+  <img width="150px" src="https://github.com/mangalorg/luaprovider/assets/62389790/219a58d4-1ca9-484f-a34b-389a2486fed0">
+  <h1>Lua Provider</h1>
+</div>
 
 > **Warning**
 > 
