@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="150px" alt="a logo depicting a moon" src="https://github.com/mangalorg/luaprovider/assets/62389790/219a58d4-1ca9-484f-a34b-389a2486fed0">
+  <img width="150px" alt="a logo depicting a moon" src="https://github.com/mangalorg/luaprovider/assets/62389790/7602ff8f-3127-44ab-82c0-bbe58383297f">
   <h1>Lua Provider</h1>
 </div>
 
