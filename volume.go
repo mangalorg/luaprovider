@@ -3,6 +3,7 @@ package luaprovider
 import (
 	"github.com/mangalorg/libmangal"
 	lua "github.com/yuin/gopher-lua"
+	"strconv"
 )
 
 type Volume struct {
@@ -10,6 +11,10 @@ type Volume struct {
 
 	manga *Manga
 	table *lua.LTable
+}
+
+func (v Volume) String() string {
+	return strconv.Itoa(v.Number)
 }
 
 func (v Volume) Manga() libmangal.Manga {

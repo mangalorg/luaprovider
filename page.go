@@ -19,6 +19,10 @@ type Page struct {
 	chapter *Chapter
 }
 
+func (p Page) String() string {
+	return p.URL
+}
+
 func (p Page) Chapter() libmangal.Chapter {
 	return p.chapter
 }

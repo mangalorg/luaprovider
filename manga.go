@@ -16,6 +16,10 @@ type Manga struct {
 	table *lua.LTable
 }
 
+func (m Manga) String() string {
+	return m.Title
+}
+
 func (m Manga) SeriesJson() (seriesJson libmangal.SeriesJson, ok bool) {
 	return
 }

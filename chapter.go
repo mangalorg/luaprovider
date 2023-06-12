@@ -14,6 +14,10 @@ type Chapter struct {
 	table  *lua.LTable
 }
 
+func (c Chapter) String() string {
+	return c.Title
+}
+
 func (c Chapter) Volume() libmangal.Volume {
 	return c.volume
 }
