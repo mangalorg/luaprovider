@@ -13,6 +13,8 @@ import (
 	"net/http"
 )
 
+var _ libmangal.ProviderLoader = (*loader)(nil)
+
 type Options struct {
 	HTTPClient *http.Client
 	HTTPStore  gokv.Store
@@ -34,7 +36,7 @@ func NewLoader(script []byte, options Options) (libmangal.ProviderLoader, error)
 		return nil, err
 	}
 
-	return Loader{
+	return loader{
 		options: options,
 		info:    info,
 		script:  script,
@@ -70,22 +72,22 @@ func ExtractInfo(script []byte) (libmangal.ProviderInfo, error) {
 	return info, nil
 }
 
-type Loader struct {
+type loader struct {
 	options Options
 	info    libmangal.ProviderInfo
 	script  []byte
 }
 
-func (l Loader) Info() libmangal.ProviderInfo {
+func (l loader) Info() libmangal.ProviderInfo {
 	return l.info
 }
 
-func (l Loader) String() string {
+func (l loader) String() string {
 	return l.info.Name
 }
 
-func (l Loader) Load(ctx context.Context) (libmangal.Provider, error) {
-	provider := Provider{
+func (l loader) Load(ctx context.Context) (libmangal.Provider, error) {
+	provider := provider{
 		info:    l.info,
 		options: l.options,
 	}

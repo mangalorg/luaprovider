@@ -5,7 +5,9 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-type Manga struct {
+var _ libmangal.Manga = (*luaManga)(nil)
+
+type luaManga struct {
 	Title         string `gluamapper:"title"`
 	AnilistSearch string `gluamapper:"anilist_search"`
 	URL           string `gluamapper:"url"`
@@ -16,19 +18,15 @@ type Manga struct {
 	table *lua.LTable
 }
 
-func (m Manga) String() string {
+func (m luaManga) String() string {
 	return m.Title
 }
 
-func (m Manga) SeriesJson() (seriesJson libmangal.SeriesJson, ok bool) {
-	return
-}
-
-func (m Manga) IntoLValue() lua.LValue {
+func (m luaManga) IntoLValue() lua.LValue {
 	return m.table
 }
 
-func (m Manga) Info() libmangal.MangaInfo {
+func (m luaManga) Info() libmangal.MangaInfo {
 	return libmangal.MangaInfo{
 		Title:         m.Title,
 		AnilistSearch: m.AnilistSearch,

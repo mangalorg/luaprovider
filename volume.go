@@ -6,26 +6,28 @@ import (
 	"strconv"
 )
 
-type Volume struct {
+var _ libmangal.Volume = (*luaVolume)(nil)
+
+type luaVolume struct {
 	Number int `gluamapper:"number"`
 
-	manga *Manga
+	manga *luaManga
 	table *lua.LTable
 }
 
-func (v Volume) String() string {
+func (v luaVolume) String() string {
 	return strconv.Itoa(v.Number)
 }
 
-func (v Volume) Manga() libmangal.Manga {
+func (v luaVolume) Manga() libmangal.Manga {
 	return v.manga
 }
 
-func (v Volume) IntoLValue() lua.LValue {
+func (v luaVolume) IntoLValue() lua.LValue {
 	return v.table
 }
 
-func (v Volume) Info() libmangal.VolumeInfo {
+func (v luaVolume) Info() libmangal.VolumeInfo {
 	return libmangal.VolumeInfo{
 		Number: v.Number,
 	}

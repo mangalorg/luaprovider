@@ -12,7 +12,9 @@ import (
 	"net/http"
 )
 
-type Provider struct {
+var _ libmangal.Provider = (*provider)(nil)
+
+type provider struct {
 	info    libmangal.ProviderInfo
 	options Options
 	state   *lua.LState
@@ -23,7 +25,11 @@ type Provider struct {
 	fnChapterPages *lua.LFunction
 }
 
-func (p Provider) Info() libmangal.ProviderInfo {
+func (p provider) String() string {
+	return p.info.Name
+}
+
+func (p provider) Info() libmangal.ProviderInfo {
 	return p.info
 }
 
@@ -89,7 +95,7 @@ func (l luaString) IntoLValue() lua.LValue {
 	return lua.LString(l)
 }
 
-func (p Provider) SearchMangas(
+func (p provider) SearchMangas(
 	ctx context.Context,
 	log libmangal.LogFunc,
 	query string,
@@ -102,17 +108,17 @@ func (p Provider) SearchMangas(
 		p.state,
 		p.fnSearchMangas,
 		func(i int, table *lua.LTable) (libmangal.Manga, error) {
-			var manga Manga
+			var manga luaManga
 			if err := gluamapper.Map(table, &manga); err != nil {
-				return Manga{}, err
+				return luaManga{}, err
 			}
 
 			if manga.ID == "" {
-				return Manga{}, errors.New("id must be non-empty")
+				return luaManga{}, errors.New("id must be non-empty")
 			}
 
 			if manga.Title == "" {
-				return Manga{}, errors.New("title must be non-empty")
+				return luaManga{}, errors.New("title must be non-empty")
 			}
 
 			manga.table = table
@@ -122,18 +128,23 @@ func (p Provider) SearchMangas(
 	)
 }
 
-func (p Provider) MangaVolumes(
+func (p provider) MangaVolumes(
 	ctx context.Context,
 	log libmangal.LogFunc,
 	manga libmangal.Manga,
 ) ([]libmangal.Volume, error) {
-	return p.mangaVolumes(ctx, log, manga.(Manga))
+	m, ok := manga.(luaManga)
+	if !ok {
+		return nil, fmt.Errorf("unexpected manga type: %T", manga)
+	}
+
+	return p.mangaVolumes(ctx, log, m)
 }
 
-func (p Provider) mangaVolumes(
+func (p provider) mangaVolumes(
 	ctx context.Context,
 	log libmangal.LogFunc,
-	manga Manga,
+	manga luaManga,
 ) ([]libmangal.Volume, error) {
 	log(fmt.Sprintf("Fetching volumes for %q", manga.Title))
 
@@ -143,14 +154,14 @@ func (p Provider) mangaVolumes(
 		p.state,
 		p.fnMangaVolumes,
 		func(_ int, table *lua.LTable) (libmangal.Volume, error) {
-			var volume Volume
+			var volume luaVolume
 
 			if err := gluamapper.Map(table, &volume); err != nil {
-				return Volume{}, err
+				return luaVolume{}, err
 			}
 
 			if volume.Number <= 0 {
-				return Volume{}, fmt.Errorf("invalid volume number: %d", volume.Number)
+				return luaVolume{}, fmt.Errorf("invalid volume number: %d", volume.Number)
 			}
 
 			volume.table = table
@@ -161,18 +172,23 @@ func (p Provider) mangaVolumes(
 	)
 }
 
-func (p Provider) VolumeChapters(
+func (p provider) VolumeChapters(
 	ctx context.Context,
 	log libmangal.LogFunc,
 	volume libmangal.Volume,
 ) ([]libmangal.Chapter, error) {
-	return p.volumeChapters(ctx, log, volume.(Volume))
+	v, ok := volume.(luaVolume)
+	if !ok {
+		return nil, fmt.Errorf("unexpected volume type: %T", volume)
+	}
+
+	return p.volumeChapters(ctx, log, v)
 }
 
-func (p Provider) volumeChapters(
+func (p provider) volumeChapters(
 	ctx context.Context,
 	log libmangal.LogFunc,
-	volume Volume,
+	volume luaVolume,
 ) ([]libmangal.Chapter, error) {
 	log(fmt.Sprintf("Fetching chapters for volume %d", volume.Number))
 
@@ -182,13 +198,13 @@ func (p Provider) volumeChapters(
 		p.state,
 		p.fnVolumeChapters,
 		func(i int, table *lua.LTable) (libmangal.Chapter, error) {
-			var chapter Chapter
+			var chapter luaChapter
 			if err := gluamapper.Map(table, &chapter); err != nil {
-				return Chapter{}, err
+				return luaChapter{}, err
 			}
 
 			if chapter.Title == "" {
-				return Chapter{}, errors.New("title must be non-empty")
+				return luaChapter{}, errors.New("title must be non-empty")
 			}
 
 			if chapter.Number == 0 {
@@ -203,18 +219,23 @@ func (p Provider) volumeChapters(
 	)
 }
 
-func (p Provider) ChapterPages(
+func (p provider) ChapterPages(
 	ctx context.Context,
 	log libmangal.LogFunc,
 	chapter libmangal.Chapter,
 ) ([]libmangal.Page, error) {
-	return p.chapterPages(ctx, log, chapter.(Chapter))
+	c, ok := chapter.(luaChapter)
+	if !ok {
+		return nil, fmt.Errorf("unexpected chapter type: %T", chapter)
+	}
+
+	return p.chapterPages(ctx, log, c)
 }
 
-func (p Provider) chapterPages(
+func (p provider) chapterPages(
 	ctx context.Context,
 	log libmangal.LogFunc,
-	chapter Chapter,
+	chapter luaChapter,
 ) ([]libmangal.Page, error) {
 	log(fmt.Sprintf("Fetching pages for %q", chapter.Title))
 
@@ -224,15 +245,15 @@ func (p Provider) chapterPages(
 		p.state,
 		p.fnChapterPages,
 		func(i int, table *lua.LTable) (libmangal.Page, error) {
-			var page Page
+			var page luaPage
 			if err := gluamapper.Map(table, &page); err != nil {
-				return Page{}, err
+				return luaPage{}, err
 			}
 
 			page.chapter = &chapter
 
 			if page.URL == "" {
-				return Page{}, errors.New("url must be set")
+				return luaPage{}, errors.New("url must be set")
 			}
 
 			if page.Extension == "" {
@@ -240,7 +261,7 @@ func (p Provider) chapterPages(
 			}
 
 			if !fileExtensionRegex.MatchString(page.Extension) {
-				return Page{}, fmt.Errorf("invalid page extension: %s", page.Extension)
+				return luaPage{}, fmt.Errorf("invalid page extension: %s", page.Extension)
 			}
 
 			if page.Headers == nil {
@@ -258,18 +279,23 @@ func (p Provider) chapterPages(
 	)
 }
 
-func (p Provider) GetPageImage(
+func (p provider) GetPageImage(
 	ctx context.Context,
 	log libmangal.LogFunc,
 	page libmangal.Page,
 ) ([]byte, error) {
-	return p.getPageImage(ctx, log, page.(Page))
+	page_, ok := page.(luaPage)
+	if !ok {
+		return nil, fmt.Errorf("unexpected page type: %T", page)
+	}
+
+	return p.getPageImage(ctx, log, page_)
 }
 
-func (p Provider) getPageImage(
+func (p provider) getPageImage(
 	ctx context.Context,
 	log libmangal.LogFunc,
-	page Page,
+	page luaPage,
 ) ([]byte, error) {
 	log("Getting image for page")
 
@@ -299,17 +325,7 @@ func (p Provider) getPageImage(
 		return nil, fmt.Errorf("unexpected status code: %d", response.StatusCode)
 	}
 
-	log("Everything is OK, reading")
-	var image []byte
-
-	// check content length
-	if response.ContentLength > 0 {
-		image = make([]byte, response.ContentLength)
-		_, err = io.ReadFull(response.Body, image)
-	} else {
-		image, err = io.ReadAll(response.Body)
-	}
-
+	image, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, err
 	}
