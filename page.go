@@ -10,13 +10,13 @@ var fileExtensionRegex = regexp.MustCompile(`^\.[a-zA-Z0-9][a-zA-Z0-9.]*[a-zA-Z0
 var _ libmangal.Page = (*luaPage)(nil)
 
 type luaPage struct {
-	Extension string `gluamapper:"extension"`
+	Extension string `json:"extension" gluamapper:"extension"`
 
 	// URL is the url of the page image
-	URL string `gluamapper:"url"`
+	URL string `json:"url" gluamapper:"url"`
 
-	Headers map[string]string `gluamapper:"headers"`
-	Cookies map[string]string `gluamapper:"cookies"`
+	Headers map[string]string `json:"headers" gluamapper:"headers"`
+	Cookies map[string]string `json:"cookies" gluamapper:"cookies"`
 
 	chapter *luaChapter
 }

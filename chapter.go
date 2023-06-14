@@ -1,6 +1,7 @@
 package luaprovider
 
 import (
+	"encoding/json"
 	"github.com/mangalorg/libmangal"
 	lua "github.com/yuin/gopher-lua"
 )
@@ -26,6 +27,10 @@ func (c luaChapter) Volume() libmangal.Volume {
 
 func (c luaChapter) IntoLValue() lua.LValue {
 	return c.table
+}
+
+func (c luaChapter) MarshalJSON() ([]byte, error) {
+	return json.Marshal(c.Info())
 }
 
 func (c luaChapter) Info() libmangal.ChapterInfo {
