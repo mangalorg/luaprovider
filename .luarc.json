@@ -6,7 +6,6 @@
       "ffi": "disable",
       "os": "disable",
       "io": "disable",
-      "package": "disable",
       "debug": "disable",
       "bit": "disable",
       "bit32": "disable"
