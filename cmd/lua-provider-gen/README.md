@@ -15,6 +15,8 @@ go install .
 Usage of lua-provider-gen:
   -dir string
     	output directory (default ".")
+  -luarc
+    	generate .luarc.json file for language server configuration
   -provider
     	generate provider.lua template
   -sdk

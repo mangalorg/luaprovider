@@ -35,6 +35,7 @@ Take a look at [the official lua scripts repository](https://github.com/mangalor
 ### Overview
 
 See [examples of scripts](https://github.com/mangalorg/saturno/tree/main/luas)
+See [SDK documentation](./doc.md)
 
 Scripts must look like this:
 
@@ -92,6 +93,8 @@ local sdk = require("sdk")
 
 Which provides these packages:
 
+[Documentation](./doc.md)
+
 <details>
 <summary>Packages</summary>
 
@@ -106,7 +109,7 @@ Which provides these packages:
   - [json](./lib/encoding/json)
 - [html](./lib/html)
 - [http](./lib/http)
-- [js](./lib/js) - a javascript virtual machine
+- [js](./lib/js)
 - [regexp](./lib/regexp)
 - [time](./lib/time)
 - [strings](./lib/strings)
@@ -116,17 +119,18 @@ Which provides these packages:
 Headless browser coming soon...
 </details>
 
-### Developing
+### Script Development
 
 Install [lua-provider-gen](./cmd/lua-provider-gen) helper tool
 
 Then use it to generate a new workflow
 
 ```bash
-lua-provider-gen -sdk -provider
+lua-provider-gen -sdk -provider -luarc
 ```
 
 This command will create the following files:
 
 - `sdk.lua` - gives IDE autocompletion
 - `provider.lua` - a provider script template
+- `.luarc.json` - a language server configuration

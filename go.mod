@@ -7,7 +7,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/cixtor/readability v1.0.0
 	github.com/ka-weihe/fast-levenshtein v0.0.0-20201227151214-4c99ee36a1ba
-	github.com/mangalorg/libmangal v0.3.1
+	github.com/mangalorg/libmangal v0.3.2
 	github.com/mvdan/xurls v1.1.0
 	github.com/philippgille/gokv v0.6.0
 	github.com/philippgille/gokv/syncmap v0.6.0
@@ -33,9 +33,9 @@ require (
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966 // indirect
 	golang.org/x/image v0.8.0 // indirect
-	golang.org/x/mod v0.10.0 // indirect
+	golang.org/x/mod v0.11.0 // indirect
 	golang.org/x/net v0.11.0 // indirect
-	golang.org/x/sync v0.2.0 // indirect
+	golang.org/x/sync v0.3.0 // indirect
 	golang.org/x/text v0.10.0 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

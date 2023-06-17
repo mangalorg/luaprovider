@@ -135,7 +135,8 @@ doRequest:
 		return 0
 	}
 
-	if errRequestDump == nil {
+	// only cache the response if it was successful
+	if errRequestDump == nil && response.StatusCode == http.StatusOK {
 		dumpedResponse, err := httputil.DumpResponse(response, true)
 		if err != nil {
 			goto exit
