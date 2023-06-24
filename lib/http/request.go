@@ -3,6 +3,7 @@ package http
 import (
 	"bufio"
 	"bytes"
+	"github.com/mangalorg/luaprovider/util"
 	"github.com/philippgille/gokv"
 	lua "github.com/yuin/gopher-lua"
 	"net/http"
@@ -10,23 +11,7 @@ import (
 	"strings"
 )
 
-const requestTypeName = "http_request"
-
-func checkRequest(L *lua.LState, n int) *http.Request {
-	ud := L.CheckUserData(n)
-	if v, ok := ud.Value.(*http.Request); ok {
-		return v
-	}
-	L.ArgError(1, "request expected")
-	return nil
-}
-
-func pushRequest(L *lua.LState, request *http.Request) {
-	ud := L.NewUserData()
-	ud.Value = request
-	L.SetMetatable(ud, L.GetTypeMetatable(requestTypeName))
-	L.Push(ud)
-}
+const requestTypeName = libName + "_request"
 
 func requestNew(L *lua.LState) int {
 	method := L.CheckString(1)
@@ -43,12 +28,12 @@ func requestNew(L *lua.LState) int {
 		L.RaiseError(err.Error())
 	}
 
-	pushRequest(L, request)
+	util.Push(L, request, requestTypeName)
 	return 1
 }
 
 func requestHeader(L *lua.LState) int {
-	request := checkRequest(L, 1)
+	request := util.Check[*http.Request](L, 1)
 	key := L.CheckString(2)
 
 	if L.GetTop() == 3 {
@@ -62,7 +47,7 @@ func requestHeader(L *lua.LState) int {
 }
 
 func requestCookie(L *lua.LState) int {
-	request := checkRequest(L, 1)
+	request := util.Check[*http.Request](L, 1)
 	key := L.CheckString(2)
 
 	if L.GetTop() == 3 {
@@ -83,7 +68,7 @@ func requestCookie(L *lua.LState) int {
 }
 
 func requestContentLength(L *lua.LState) int {
-	request := checkRequest(L, 1)
+	request := util.Check[*http.Request](L, 1)
 
 	if L.GetTop() == 2 {
 		value := L.CheckInt64(2)
@@ -96,7 +81,7 @@ func requestContentLength(L *lua.LState) int {
 }
 
 func requestSend(L *lua.LState, client *http.Client, store gokv.Store) int {
-	request := checkRequest(L, 1)
+	request := util.Check[*http.Request](L, 1)
 
 	dumpedRequest, errRequestDump := httputil.DumpRequestOut(request, true)
 	dumpedRequestString := string(dumpedRequest)
@@ -124,7 +109,7 @@ func requestSend(L *lua.LState, client *http.Client, store gokv.Store) int {
 			goto doRequest
 		}
 
-		pushResponse(L, response)
+		util.Push(L, response, responseTypeName)
 		return 1
 	}
 
@@ -146,6 +131,6 @@ doRequest:
 	}
 
 exit:
-	pushResponse(L, response)
+	util.Push(L, response, responseTypeName)
 	return 1
 }

@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const documentTypeName = "html_document"
+const documentTypeName = libName + "_document"
 
 func checkDocument(L *lua.LState, n int) *goquery.Document {
 	ud := L.CheckUserData(n)

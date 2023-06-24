@@ -4,6 +4,7 @@ import (
 	luadoc "github.com/mangalorg/luaprovider/doc"
 	"github.com/mangalorg/luaprovider/lib/crypto"
 	"github.com/mangalorg/luaprovider/lib/encoding"
+	"github.com/mangalorg/luaprovider/lib/headless"
 	"github.com/mangalorg/luaprovider/lib/html"
 	httpLib "github.com/mangalorg/luaprovider/lib/http"
 	"github.com/mangalorg/luaprovider/lib/js"
@@ -49,6 +50,7 @@ func Lib(L *lua.LState, options *Options) *luadoc.Lib {
 			time.Lib(),
 			urls.Lib(),
 			encoding.Lib(L),
+			headless.Lib(),
 			httpLib.Lib(httpLib.LibOptions{
 				HTTPClient: options.HTTPClient,
 				HTTPStore:  options.HTTPStore,

@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const selectionTypeName = documentTypeName + "_selection"
+const selectionTypeName = libName + "_selection"
 
 func checkSelection(L *lua.LState, n int) *goquery.Selection {
 	ud := L.CheckUserData(n)

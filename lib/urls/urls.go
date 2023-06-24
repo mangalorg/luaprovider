@@ -2,13 +2,15 @@ package urls
 
 import (
 	luadoc "github.com/mangalorg/luaprovider/doc"
+	"github.com/mangalorg/luaprovider/util"
 	lua "github.com/yuin/gopher-lua"
 	"net/url"
 )
 
 const (
-	valuesTypeName = "url_values"
-	urlTypeName    = "url_url"
+	libName        = "urls"
+	valuesTypeName = libName + "_values"
+	urlTypeName    = libName + "_url"
 )
 
 func Lib() *luadoc.Lib {
@@ -221,11 +223,23 @@ func Lib() *luadoc.Lib {
 					},
 				},
 			},
+			{
+				Name:        "copy",
+				Description: "Copy URL",
+				Value:       urlURLCopy,
+				Returns: []*luadoc.Param{
+					{
+						Name:        "url",
+						Description: "A copied URL",
+						Type:        urlTypeName,
+					},
+				},
+			},
 		},
 	}
 
 	return &luadoc.Lib{
-		Name:        "urls",
+		Name:        libName,
 		Description: "URLs is a library for working with URLs.",
 		Funcs: []*luadoc.Func{
 			{
@@ -343,36 +357,6 @@ func Lib() *luadoc.Lib {
 	}
 }
 
-func checkValues(L *lua.LState, idx int) *url.Values {
-	u, ok := L.CheckUserData(idx).Value.(*url.Values)
-	if !ok {
-		L.ArgError(idx, "expected `values`")
-	}
-	return u
-}
-
-func pushValues(L *lua.LState, v *url.Values) {
-	ud := L.NewUserData()
-	ud.Value = v
-	L.SetMetatable(ud, L.GetTypeMetatable(valuesTypeName))
-	L.Push(ud)
-}
-
-func checkURL(L *lua.LState, idx int) *url.URL {
-	u, ok := L.CheckUserData(idx).Value.(*url.URL)
-	if !ok {
-		L.ArgError(idx, "expected `url`")
-	}
-	return u
-}
-
-func pushURL(L *lua.LState, u *url.URL) {
-	ud := L.NewUserData()
-	ud.Value = u
-	L.SetMetatable(ud, L.GetTypeMetatable(urlTypeName))
-	L.Push(ud)
-}
-
 func urlPathEscape(L *lua.LState) int {
 	s := L.CheckString(1)
 	L.Push(lua.LString(url.PathEscape(s)))
@@ -408,12 +392,12 @@ func urlQueryUnescape(L *lua.LState) int {
 }
 
 func urlValues(L *lua.LState) int {
-	pushValues(L, &url.Values{})
+	util.Push(L, &url.Values{}, valuesTypeName)
 	return 1
 }
 
 func urlValuesAdd(L *lua.LState) int {
-	v := checkValues(L, 1)
+	v := util.Check[*url.Values](L, 1)
 	key := L.CheckString(2)
 	value := L.CheckString(3)
 	v.Add(key, value)
@@ -421,7 +405,7 @@ func urlValuesAdd(L *lua.LState) int {
 }
 
 func urlValuesSet(L *lua.LState) int {
-	v := checkValues(L, 1)
+	v := util.Check[*url.Values](L, 1)
 	key := L.CheckString(2)
 	value := L.CheckString(3)
 	v.Set(key, value)
@@ -429,14 +413,14 @@ func urlValuesSet(L *lua.LState) int {
 }
 
 func urlValuesGet(L *lua.LState) int {
-	v := checkValues(L, 1)
+	v := util.Check[*url.Values](L, 1)
 	key := L.CheckString(2)
 	L.Push(lua.LString(v.Get(key)))
 	return 1
 }
 
 func urlValuesString(L *lua.LState) int {
-	v := checkValues(L, 1)
+	v := util.Check[*url.Values](L, 1)
 	L.Push(lua.LString(v.Encode()))
 	return 1
 }
@@ -448,19 +432,19 @@ func urlValuesParse(L *lua.LState) int {
 		L.RaiseError(err.Error())
 		return 0
 	}
-	pushValues(L, &v)
+	util.Push(L, &v, valuesTypeName)
 	return 1
 }
 
 func urlValuesDel(L *lua.LState) int {
-	v := checkValues(L, 1)
+	v := util.Check[*url.Values](L, 1)
 	key := L.CheckString(2)
 	v.Del(key)
 	return 0
 }
 
 func urlValuesHas(L *lua.LState) int {
-	v := checkValues(L, 1)
+	v := util.Check[*url.Values](L, 1)
 	key := L.CheckString(2)
 	L.Push(lua.LBool(v.Has(key)))
 	return 1
@@ -475,33 +459,33 @@ func urlParse(L *lua.LState) int {
 		return 0
 	}
 
-	pushURL(L, u)
+	util.Push(L, u, urlTypeName)
 	return 1
 }
 
 func urlURLHostname(L *lua.LState) int {
-	u := checkURL(L, 1)
+	u := util.Check[*url.URL](L, 1)
 
 	L.Push(lua.LString(u.Hostname()))
 	return 1
 }
 
 func urlURLQuery(L *lua.LState) int {
-	u := checkURL(L, 1)
+	u := util.Check[*url.URL](L, 1)
 
 	if L.GetTop() == 1 {
 		values := u.Query()
-		pushValues(L, &values)
+		util.Push(L, &values, valuesTypeName)
 		return 1
 	} else { // >= 2
-		values := checkValues(L, 2)
+		values := util.Check[*url.Values](L, 2)
 		u.RawQuery = values.Encode()
 		return 0
 	}
 }
 
 func urlURLJoinPath(L *lua.LState) int {
-	u := checkURL(L, 1)
+	u := util.Check[*url.URL](L, 1)
 
 	top := L.GetTop()
 	elems := make([]string, top-1)
@@ -510,12 +494,12 @@ func urlURLJoinPath(L *lua.LState) int {
 		elems[i-2] = L.CheckString(i)
 	}
 
-	pushURL(L, u.JoinPath(elems...))
+	util.Push(L, u.JoinPath(elems...), urlTypeName)
 	return 1
 }
 
 func urlURLParse(L *lua.LState) int {
-	u := checkURL(L, 1)
+	u := util.Check[*url.URL](L, 1)
 	ref := L.CheckString(2)
 
 	parsed, err := u.Parse(ref)
@@ -524,13 +508,21 @@ func urlURLParse(L *lua.LState) int {
 		return 0
 	}
 
-	pushURL(L, parsed)
+	util.Push(L, parsed, urlTypeName)
 	return 1
 }
 
 func urlURLString(L *lua.LState) int {
-	u := checkURL(L, 1)
+	u := util.Check[*url.URL](L, 1)
 
 	L.Push(lua.LString(u.String()))
+	return 1
+}
+
+func urlURLCopy(L *lua.LState) int {
+	u := util.Check[*url.URL](L, 1)
+
+	copied := *u
+	util.Push(L, &copied, urlTypeName)
 	return 1
 }

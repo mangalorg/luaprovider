@@ -4,6 +4,8 @@ import (
 	luadoc "github.com/mangalorg/luaprovider/doc"
 )
 
+const libName = "html"
+
 func Lib() *luadoc.Lib {
 	selector := &luadoc.Param{
 		Name:        "selector",
@@ -512,7 +514,7 @@ func Lib() *luadoc.Lib {
 	}
 
 	return &luadoc.Lib{
-		Name:        "html",
+		Name:        libName,
 		Description: "This library provides functions for parsing HTML and querying it using CSS selectors. It is based on [goquery](https://github.com/PuerkitoBio/goquery).",
 		Funcs: []*luadoc.Func{
 			{

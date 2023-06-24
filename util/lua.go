@@ -113,3 +113,20 @@ func ToLValue(L *lua.LState, value any) (lua.LValue, error) {
 		}
 	}
 }
+
+func Push[T any](state *lua.LState, t T, typeName string) {
+	ud := state.NewUserData()
+	ud.Value = t
+
+	state.SetMetatable(ud, state.GetTypeMetatable(typeName))
+	state.Push(ud)
+}
+
+func Check[T any](state *lua.LState, n int) T {
+	t, ok := state.CheckUserData(n).Value.(T)
+	if !ok {
+		state.ArgError(n, fmt.Sprintf("%T expected", t))
+	}
+
+	return t
+}

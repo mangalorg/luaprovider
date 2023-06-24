@@ -6,6 +6,7 @@ require (
 	github.com/JohannesKaufmann/html-to-markdown v1.4.0
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/cixtor/readability v1.0.0
+	github.com/go-rod/rod v0.113.3
 	github.com/ka-weihe/fast-levenshtein v0.0.0-20201227151214-4c99ee36a1ba
 	github.com/mangalorg/libmangal v0.3.2
 	github.com/mvdan/xurls v1.1.0
@@ -32,6 +33,11 @@ require (
 	github.com/philippgille/gokv/util v0.6.0 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966 // indirect
+	github.com/ysmood/fetchup v0.2.3 // indirect
+	github.com/ysmood/goob v0.4.0 // indirect
+	github.com/ysmood/got v0.34.1 // indirect
+	github.com/ysmood/gson v0.7.3 // indirect
+	github.com/ysmood/leakless v0.8.0 // indirect
 	golang.org/x/image v0.8.0 // indirect
 	golang.org/x/mod v0.11.0 // indirect
 	golang.org/x/net v0.11.0 // indirect

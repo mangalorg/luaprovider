@@ -6,6 +6,11 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
+const (
+	libName          = "base64"
+	encodingTypeName = libName + "_encoding"
+)
+
 func encodingToLua(L *lua.LState, encoding *base64.Encoding) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = encoding
@@ -13,9 +18,8 @@ func encodingToLua(L *lua.LState, encoding *base64.Encoding) *lua.LUserData {
 }
 
 func Lib(L *lua.LState) *luadoc.Lib {
-	const encodingTypeName = "base64_encoding"
 	return &luadoc.Lib{
-		Name:        "base64",
+		Name:        libName,
 		Description: "Base64 encoding and decoding.",
 		Vars: []*luadoc.Var{
 			{

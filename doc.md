@@ -1,35 +1,3 @@
-# _G
-
-
-A global variable (not a function) that holds the global environment (see [§2.2](http://www.lua.org/manual/5.2/manual.html#2.2)). Lua itself does not use this variable; changing its value does not affect any environment, nor vice versa.
-
-[View documents](http://www.lua.org/manual/5.4/manual.html#pdf-_G)
-
-
-
-```lua
-_G
-```
-
-
----
-
-# _VERSION
-
-
-A global variable (not a function) that holds a string containing the running Lua version.
-
-[View documents](http://www.lua.org/manual/5.4/manual.html#pdf-_VERSION)
-
-
-
-```lua
-string
-```
-
-
----
-
 # aes
 
  AES encryption and decryption.
@@ -514,6 +482,85 @@ function getmetatable(object: any)
 
 ---
 
+# headless
+
+ Headless browser
+
+## browser
+
+
+```lua
+function headless.browser()
+  -> browser: headless_browser
+```
+
+ Creates a new headless browser
+
+@*return* `browser` — headless browser instance
+
+
+---
+
+# headless_browser
+
+
+## page
+
+
+```lua
+(method) headless_browser:page(url: string)
+  -> page: headless_page
+```
+
+ Visit the page
+
+@*param* `url` — url of the page to visit
+
+
+---
+
+# headless_element
+
+
+## html
+
+
+```lua
+(method) headless_element:html()
+  -> html: string
+```
+
+
+---
+
+# headless_page
+
+
+## click
+
+
+```lua
+(method) headless_page:click()
+```
+
+## html
+
+
+```lua
+(method) headless_page:html()
+  -> html: string
+```
+
+## input
+
+
+```lua
+(method) headless_page:input(text: string)
+```
+
+
+---
+
 # html
 
  This library provides functions for parsing HTML and querying it using CSS selectors. It is based on [goquery](https://github.com/PuerkitoBio/goquery).
@@ -544,7 +591,7 @@ function html.parse(html: string)
 
 ```lua
 (method) html_document:find(selector: string)
-  -> selection: html_document_selection
+  -> selection: html_selection
 ```
 
  Finds all elements that match the selector string. It returns a new selection object with the matched elements.
@@ -582,7 +629,7 @@ function html.parse(html: string)
 
 ```lua
 (method) html_document:selection()
-  -> selection: html_document_selection
+  -> selection: html_selection
 ```
 
  Converts document to a selection object.
@@ -604,15 +651,15 @@ function html.parse(html: string)
 
 ---
 
-# html_document_selection
+# html_selection
 
 
 ## add
 
 
 ```lua
-(method) html_document_selection:add(selector: string)
-  -> selection: html_document_selection
+(method) html_selection:add(selector: string)
+  -> selection: html_selection
 ```
 
  Add adds the selector string's matching nodes to those in the current selection and returns a new selection object. The selector string is run in the context of the document of the current selection object.
@@ -625,8 +672,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:add_back(selection: html_document_selection)
-  -> selection: html_document_selection
+(method) html_selection:add_back(selection: html_selection)
+  -> selection: html_selection
 ```
 
  Adds the specified Selection object's nodes to those in the current selection and returns a new Selection object.
@@ -639,7 +686,7 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:add_class(class: string)
+(method) html_selection:add_class(class: string)
 ```
 
  Adds the specified class(es) to each of the set of matched elements.
@@ -650,8 +697,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:add_selection(selection: html_document_selection)
-  -> selection: html_document_selection
+(method) html_selection:add_selection(selection: html_selection)
+  -> selection: html_selection
 ```
 
  Adds the specified selection object's nodes to those in the current selection and returns a new selection object.
@@ -664,7 +711,7 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:attr(name: string)
+(method) html_selection:attr(name: string)
   -> value: string
   2. ok: boolean
 ```
@@ -681,7 +728,7 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:attr_or(name: string, default: string)
+(method) html_selection:attr_or(name: string, default: string)
   -> value: string
 ```
 
@@ -697,8 +744,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:children()
-  -> selection: html_document_selection
+(method) html_selection:children()
+  -> selection: html_selection
 ```
 
  Gets all direct child elements of each element in the Selection. It returns a new selection object containing the matched elements.
@@ -709,8 +756,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:closest(selector: string)
-  -> selection: html_document_selection
+(method) html_selection:closest(selector: string)
+  -> selection: html_selection
 ```
 
  Gets the first element that matches the selector by testing the element itself and traversing up through its ancestors in the DOM tree.
@@ -723,8 +770,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:contents()
-  -> selection: html_document_selection
+(method) html_selection:contents()
+  -> selection: html_selection
 ```
 
  Contents gets the children of each element in the selection, including text and comment nodes. It returns a new selection object containing these elements
@@ -735,7 +782,7 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:each(fn: fun(selection: html_document_selection, index: number))
+(method) html_selection:each(fn: fun(selection: html_selection, index: number))
 ```
 
  Iterates over all elements in the selection, calling the given function for each one.
@@ -746,8 +793,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:eq(index: number)
-  -> selection: html_document_selection
+(method) html_selection:eq(index: number)
+  -> selection: html_selection
 ```
 
  Reduces the set of matched elements to the one at the specified index. If a negative index is given, it counts backwards starting at the end of the set. It returns a new Selection object, and an empty Selection object if the index is invalid.
@@ -760,8 +807,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:filter(selector: string)
-  -> selection: html_document_selection
+(method) html_selection:filter(selector: string)
+  -> selection: html_selection
 ```
 
  Filter reduces the set of matched elements to those that match the selector string. It returns a new Selection object for this subset of matching elements.
@@ -774,8 +821,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:find(selector: string)
-  -> selection: html_document_selection
+(method) html_selection:find(selector: string)
+  -> selection: html_selection
 ```
 
  Finds all elements matching the given selector.
@@ -788,8 +835,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:find_selection(selection: html_document_selection)
-  -> selection: html_document_selection
+(method) html_selection:find_selection(selection: html_selection)
+  -> selection: html_selection
 ```
 
  gets the descendants of each element in the current selection, filtered by a selection. It returns a new selection object containing these matched elements.
@@ -802,8 +849,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:first()
-  -> selection: html_document_selection
+(method) html_selection:first()
+  -> selection: html_selection
 ```
 
  Reduces the set of matched elements to the first in the set. It returns a new selection object, and an empty selection object if the the selection is empty.
@@ -814,7 +861,7 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:has_class(class: string)
+(method) html_selection:has_class(class: string)
   -> ok: boolean
 ```
 
@@ -828,7 +875,7 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:html()
+(method) html_selection:html()
   -> html: string
 ```
 
@@ -840,7 +887,7 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:is(selector: string)
+(method) html_selection:is(selector: string)
   -> ok: boolean
 ```
 
@@ -854,8 +901,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:last()
-  -> selection: html_document_selection
+(method) html_selection:last()
+  -> selection: html_selection
 ```
 
  Reduces the set of matched elements to the last in the set. It returns a new selection object, and an empty selection object if the the selection is empty.
@@ -866,7 +913,7 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:length()
+(method) html_selection:length()
   -> n: number
 ```
 
@@ -878,7 +925,7 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:map(fn: fun(selection: html_document_selection, index: number):any)
+(method) html_selection:map(fn: fun(selection: html_selection, index: number):any)
   -> results: any[]
 ```
 
@@ -892,7 +939,7 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:markdown()
+(method) html_selection:markdown()
   -> markdown: string
 ```
 
@@ -904,8 +951,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:next()
-  -> selection: html_document_selection
+(method) html_selection:next()
+  -> selection: html_selection
 ```
 
  Gets the immediately following sibling of each element in the set of matched elements, optionally filtered by a selector. It returns a new Selection object containing the matched elements.
@@ -916,7 +963,7 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:next_all()
+(method) html_selection:next_all()
 ```
 
  Gets all the following siblings of each element in the Selection. It returns a new Selection object containing the matched elements.
@@ -925,8 +972,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:next_until(selector: string)
-  -> selection: html_document_selection
+(method) html_selection:next_until(selector: string)
+  -> selection: html_selection
 ```
 
  gets all following siblings of each element up to but not including the element matched by the selector. It returns a new Selection object containing the matched elements.
@@ -939,8 +986,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:parent()
-  -> selection: html_document_selection
+(method) html_selection:parent()
+  -> selection: html_selection
 ```
 
  Gets the parent of each element in the Selection. It returns a new Selection object containing the matched elements.
@@ -951,8 +998,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:parents()
-  -> selection: html_document_selection
+(method) html_selection:parents()
+  -> selection: html_selection
 ```
 
  Gets the ancestors of each element in the current Selection. It returns a new Selection object with the matched elements.
@@ -963,8 +1010,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:parents_until(selector: string)
-  -> selection: html_document_selection
+(method) html_selection:parents_until(selector: string)
+  -> selection: html_selection
 ```
 
  Gets the ancestors of each element in the current Selection, up to but not including the element matched by the selector. It returns a new Selection object with the matched elements.
@@ -977,8 +1024,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:prev()
-  -> selection: html_document_selection
+(method) html_selection:prev()
+  -> selection: html_selection
 ```
 
  Gets the immediately preceding sibling of each element in the Selection. It returns a new selection object containing the matched elements.
@@ -989,8 +1036,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:prev_all()
-  -> selection: html_document_selection
+(method) html_selection:prev_all()
+  -> selection: html_selection
 ```
 
  Gets all the preceding siblings of each element in the Selection. It returns a new selection object containing the matched elements.
@@ -1001,8 +1048,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:prev_until(selector: string)
-  -> selection: html_document_selection
+(method) html_selection:prev_until(selector: string)
+  -> selection: html_selection
 ```
 
  Gets all preceding siblings of each element up to but not including the element matched by the selector. It returns a new selection object containing the matched elements.
@@ -1015,8 +1062,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:remove(selector: string)
-  -> selection: html_document_selection
+(method) html_selection:remove(selector: string)
+  -> selection: html_selection
 ```
 
  Removes elements from the selection that match the selector string. It returns a new selection object with the matching elements removed.
@@ -1029,7 +1076,7 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:remove_class(class: string)
+(method) html_selection:remove_class(class: string)
 ```
 
  Removes the given class(es) from each element in the set of matched elements. Multiple class names can be specified, separated by a space or via multiple arguments. If no class name is provided, all classes are removed.
@@ -1040,8 +1087,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:siblings()
-  -> selection: html_document_selection
+(method) html_selection:siblings()
+  -> selection: html_selection
 ```
 
  Gets all sibling elements of each element in the Selection. It returns a new selection object containing the matched elements.
@@ -1052,8 +1099,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:simplified()
-  -> selection: html_document_selection
+(method) html_selection:simplified()
+  -> selection: html_selection
 ```
 
  Gets the readable part of the selection (simplified view). Similar to reader mode in browsers.
@@ -1064,8 +1111,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:slice(start: number, finish: number)
-  -> selection: html_document_selection
+(method) html_selection:slice(start: number, finish: number)
+  -> selection: html_selection
 ```
 
  Returns a selection containing a subset of the elements in the original selection. It returns a new selection object with the matched elements.
@@ -1080,8 +1127,8 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:terminate()
-  -> selection: html_document_selection
+(method) html_selection:terminate()
+  -> selection: html_selection
 ```
 
  Ends the most recent filtering operation in the current chain and returns the set of matched elements to its previous state.
@@ -1092,7 +1139,7 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:text()
+(method) html_selection:text()
   -> text: string
 ```
 
@@ -1104,7 +1151,7 @@ function html.parse(html: string)
 
 
 ```lua
-(method) html_document_selection:toggle_class(class: string)
+(method) html_selection:toggle_class(class: string)
 ```
 
  Adds or removes the given class(es) for each element in the set of matched elements. Multiple class names can be specified, separated by a space or via multiple arguments.
@@ -2290,6 +2337,118 @@ function next(table: table<<K>, <V>>, index?: <K>)
 
 ---
 
+# package
+
+
+
+
+[View documents](http://www.lua.org/manual/5.4/manual.html#pdf-package)
+
+
+
+```lua
+packagelib
+```
+
+
+---
+
+# package.config
+
+
+A string describing some compile-time configurations for packages.
+
+[View documents](http://www.lua.org/manual/5.4/manual.html#pdf-package.config)
+
+
+
+```lua
+string
+```
+
+
+---
+
+# package.loaders
+
+
+A table used by `require` to control how to load modules.
+
+[View documents](http://www.lua.org/manual/5.4/manual.html#pdf-package.loaders)
+
+
+
+```lua
+table
+```
+
+
+---
+
+# package.loadlib
+
+
+Dynamically links the host program with the C library `libname`.
+
+[View documents](http://www.lua.org/manual/5.4/manual.html#pdf-package.loadlib)
+
+
+```lua
+function package.loadlib(libname: string, funcname: string)
+  -> any
+```
+
+
+---
+
+# package.searchers
+
+
+A table used by `require` to control how to load modules.
+
+[View documents](http://www.lua.org/manual/5.4/manual.html#pdf-package.searchers)
+
+
+
+```lua
+table
+```
+
+
+---
+
+# package.searchpath
+
+
+Searches for the given `name` in the given `path`.
+
+[View documents](http://www.lua.org/manual/5.4/manual.html#pdf-package.searchpath)
+
+
+```lua
+function package.searchpath(name: string, path: string, sep?: string, rep?: string)
+  -> filename: string?
+  2. errmsg: string?
+```
+
+
+---
+
+# package.seeall
+
+
+Sets a metatable for `module` with its `__index` field referring to the global environment, so that this module inherits values from the global environment. To be used as an option to function `module` .
+
+[View documents](http://www.lua.org/manual/5.4/manual.html#pdf-package.seeall)
+
+
+```lua
+function package.seeall(module: table)
+```
+
+
+---
+
 # pairs
 
 
@@ -2570,6 +2729,22 @@ Only matches urls with a scheme to avoid false positives.
 
 ---
 
+# require
+
+
+Loads the given module, returns any value returned by the given module(`true` when `nil`).
+
+[View documents](http://www.lua.org/manual/5.4/manual.html#pdf-require)
+
+
+```lua
+function require(modname: string)
+  -> unknown
+```
+
+
+---
+
 # sdk
 
  Contains various utilities for making HTTP requests, working with JSON, HTML, and more.
@@ -2590,6 +2765,15 @@ Various cryptographic functions.
 encoding
 ```
 
+
+## headless
+
+
+```lua
+headless
+```
+
+Headless browser
 
 ## html
 

@@ -7,6 +7,8 @@ import (
 	"net/http"
 )
 
+const libName = "http"
+
 type LibOptions struct {
 	HTTPClient *http.Client
 	HTTPStore  gokv.Store
@@ -185,7 +187,7 @@ func Lib(options LibOptions) *luadoc.Lib {
 	}
 
 	return &luadoc.Lib{
-		Name:        "http",
+		Name:        libName,
 		Description: "Package http provides HTTP client implementations. Make HTTP (or HTTPS) requests",
 		Vars: []*luadoc.Var{
 			{
