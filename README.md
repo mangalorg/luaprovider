@@ -35,7 +35,8 @@ Take a look at [the official lua scripts repository](https://github.com/mangalor
 ### Overview
 
 See [examples of scripts](https://github.com/mangalorg/saturno/tree/main/luas)
-See [SDK documentation](./doc.md)
+
+See [SDK documentation](https://github.com/mangalorg/luaprovider/wiki/sdk.lua)
 
 Scripts must look like this:
 
@@ -81,7 +82,7 @@ Basically, `--->` indicates that this line contains script information field in 
 
 - `name` - Name of the script
 - `description` - Description of the script
-- `version` - Script version. It must be a valid [semver](https://semver.org/)
+- `version` - Script version. It must be a valid [semver](https://semver.org/) (*without* `v` prefix)
 
 ---
 
@@ -93,11 +94,13 @@ local sdk = require("sdk")
 
 Which provides these packages:
 
-[Documentation](./doc.md)
+[Documentation](https://github.com/mangalorg/luaprovider/wiki/sdk.lua)
 
 <details>
 <summary>Packages</summary>
 
+- [http](./lib/http)
+- [headless](./lib/headless)
 - [crypto](./lib/crypto)
   - [md5](./lib/crypto/md5)
   - [sha1](./lib/crypto/sha1)
@@ -108,7 +111,6 @@ Which provides these packages:
   - [base64](./lib/encoding/base64)
   - [json](./lib/encoding/json)
 - [html](./lib/html)
-- [http](./lib/http)
 - [js](./lib/js)
 - [regexp](./lib/regexp)
 - [time](./lib/time)
@@ -116,12 +118,15 @@ Which provides these packages:
 - [levenshtein](./lib/levenshtein)
 - [util](./lib/util)
 
-Headless browser coming soon...
 </details>
 
 ### Script Development
 
-Install [lua-provider-gen](./cmd/lua-provider-gen) helper tool
+Install [helper tools](./cmd)
+
+```bash
+just install-cmd
+```
 
 Then use it to generate a new workflow
 

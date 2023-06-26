@@ -15,7 +15,7 @@ update:
 install-cmd:
     @echo "Installing lua-provider-gen"
     go install ./cmd/lua-provider-gen
-    
+
     @echo "Installing lua-provider-probe"
     go install ./cmd/lua-provider-probe
 
