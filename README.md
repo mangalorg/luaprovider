@@ -4,30 +4,35 @@
 </div>
 
 > **Warning**
-> 
+>
 > This is a beta software. The API is not stable and may change at any time.
 
-This is a generic provider for [libmangal](https://github.com/mangalorg/libmangal)
-that uses [Lua](https://www.lua.org/) scripts to create *subproviders*.
+This is a generic provider for
+[libmangal](https://github.com/mangalorg/libmangal) that uses
+[Lua](https://www.lua.org/) scripts to create _subproviders_.
 
-It uses [native go implementation of the Lua interpreter](https://github.com/yuin/gopher-lua)
+It uses
+[native go implementation of the Lua interpreter](https://github.com/yuin/gopher-lua)
 and provides a set of libraries that can be used in the scripts.
 
-Take a look at [the official lua scripts repository](https://github.com/mangalorg/saturno)
+Take a look at
+[the official lua scripts repository](https://github.com/mangalorg/saturno)
 
 ## Features
 
-- Built-in Lua VM without CGO with [gopher-lua](https://github.com/yuin/gopher-lua)
+- Built-in Lua VM without CGO with
+  [gopher-lua](https://github.com/yuin/gopher-lua)
 - Batteries-included library
 - Ships with [CLI helper tools](./cmd) for generating templates & probing.
 - Luadoc generation which enables autocompletion for you IDE
 - Script template generation
 
 > **Note**
-> 
-> It is recommended to use [lua-language-server](https://github.com/LuaLS/lua-language-server)
-> to get nice completions for your IDE
-> 
+>
+> It is recommended to use
+> [lua-language-server](https://github.com/LuaLS/lua-language-server) to get
+> nice completions for your IDE
+>
 > [VSCode extension](https://marketplace.visualstudio.com/items?itemName=sumneko.lua)
 
 ## Scripts
@@ -51,11 +56,11 @@ function SearchMangas(query)
 end
 
 function MangaVolumes(manga)
- return {} 
+ return {}
 end
 
 function VolumeChapters(volume)
- return {} 
+ return {}
 end
 
 function ChapterPages(chapter)
@@ -64,6 +69,7 @@ end
 ```
 
 Notice the four required global functions
+
 - `SearchMangas` - searches for mangas based on the given query.
 - `MangaVolumes` - gets manga volumes. Each manga must have at least 1 volume.
 - `VolumeChapters` - gets chapters of the given volume.
@@ -78,11 +84,13 @@ Also, each script **must** contain the following lines:
 ---> website: https://example.com
 ```
 
-Basically, `--->` indicates that this line contains script information field in YAML format.
+Basically, `--->` indicates that this line contains script information field in
+YAML format.
 
 - `name` - Name of the script
 - `description` - Description of the script
-- `version` - Script version. It must be a valid [semver](https://semver.org/) (*without* `v` prefix)
+- `version` - Script version. It must be a valid [semver](https://semver.org/)
+  (_without_ `v` prefix)
 
 ---
 
