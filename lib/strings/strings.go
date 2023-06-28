@@ -7,9 +7,11 @@ import (
 	"strings"
 )
 
+const libName = "strings"
+
 func Lib() *luadoc.Lib {
 	return &luadoc.Lib{
-		Name:        "strings",
+		Name:        libName,
 		Description: "Simple functions to manipulate UTF-8 encoded strings.",
 		Funcs: []*luadoc.Func{
 			{

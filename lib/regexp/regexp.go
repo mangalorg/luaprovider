@@ -2,21 +2,24 @@ package regexp
 
 import (
 	luadoc "github.com/mangalorg/luaprovider/doc"
+	"github.com/mangalorg/luaprovider/util"
 	"github.com/mvdan/xurls"
 	lua "github.com/yuin/gopher-lua"
 	"regexp"
 )
 
+const libName = "regex"
+
 func Lib(L *lua.LState) *luadoc.Lib {
 	toLValue := func(r *regexp.Regexp) *lua.LUserData {
 		ud := L.NewUserData()
 		ud.Value = r
-		L.SetMetatable(ud, L.GetTypeMetatable(regexpTypeName))
+		L.SetMetatable(ud, L.GetTypeMetatable(patternTypeName))
 		return ud
 	}
 
-	classRe := &luadoc.Class{
-		Name:        "re",
+	classPattern := &luadoc.Class{
+		Name:        patternTypeName,
 		Description: "Compiled regular expression",
 		Methods: []*luadoc.Method{
 			{
@@ -169,11 +172,13 @@ Inside replacement, $ signs are interpreted as in expand, so for instance $1 rep
 				Name:        "urls_relaxed",
 				Description: "Matches all the urls it can find.",
 				Value:       toLValue(xurls.Relaxed),
+				Type:        patternTypeName,
 			},
 			{
 				Name:        "urls_strict",
 				Description: "Only matches urls with a scheme to avoid false positives.",
 				Value:       toLValue(xurls.Strict),
+				Type:        patternTypeName,
 			},
 		},
 		Funcs: []*luadoc.Func{
@@ -216,13 +221,13 @@ Inside replacement, $ signs are interpreted as in expand, so for instance $1 rep
 					{
 						Name:        "regexp",
 						Description: "The compiled regular expression",
-						Type:        classRe.Name,
+						Type:        patternTypeName,
 					},
 				},
 			},
 		},
 		Classes: []*luadoc.Class{
-			classRe,
+			classPattern,
 		},
 	}
 }
@@ -248,6 +253,6 @@ func compile(L *lua.LState) int {
 		return 0
 	}
 
-	pushRegexp(L, compiled)
+	util.Push(L, compiled, patternTypeName)
 	return 1
 }

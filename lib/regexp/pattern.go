@@ -1,30 +1,15 @@
 package regexp
 
 import (
+	"github.com/mangalorg/luaprovider/util"
 	lua "github.com/yuin/gopher-lua"
 	"regexp"
 )
 
-const regexpTypeName = "regexp"
-
-func pushRegexp(L *lua.LState, regexp *regexp.Regexp) {
-	ud := L.NewUserData()
-	ud.Value = regexp
-	L.SetMetatable(ud, L.GetTypeMetatable(regexpTypeName))
-	L.Push(ud)
-}
-
-func checkRegexp(L *lua.LState, n int) *regexp.Regexp {
-	ud := L.CheckUserData(n)
-	if v, ok := ud.Value.(*regexp.Regexp); ok {
-		return v
-	}
-	L.ArgError(n, "regexp expected")
-	return nil
-}
+const patternTypeName = libName + "_pattern"
 
 func regexpFindSubmatch(L *lua.LState) int {
-	re := checkRegexp(L, 1)
+	re := util.Check[*regexp.Regexp](L, 1)
 	text := L.CheckString(2)
 	matches := re.FindStringSubmatch(text)
 	tbl := L.NewTable()
@@ -36,7 +21,7 @@ func regexpFindSubmatch(L *lua.LState) int {
 }
 
 func regexpMatch(L *lua.LState) int {
-	re := checkRegexp(L, 1)
+	re := util.Check[*regexp.Regexp](L, 1)
 	text := L.CheckString(2)
 	matched := re.MatchString(text)
 	L.Push(lua.LBool(matched))
@@ -44,7 +29,7 @@ func regexpMatch(L *lua.LState) int {
 }
 
 func regexpReplaceAll(L *lua.LState) int {
-	re := checkRegexp(L, 1)
+	re := util.Check[*regexp.Regexp](L, 1)
 	text := L.CheckString(2)
 	replacement := L.CheckString(3)
 	result := re.ReplaceAllString(text, replacement)
@@ -53,7 +38,7 @@ func regexpReplaceAll(L *lua.LState) int {
 }
 
 func regexpSplit(L *lua.LState) int {
-	re := checkRegexp(L, 1)
+	re := util.Check[*regexp.Regexp](L, 1)
 	text := L.CheckString(2)
 	tbl := L.NewTable()
 	for _, match := range re.Split(text, -1) {
@@ -64,7 +49,7 @@ func regexpSplit(L *lua.LState) int {
 }
 
 func regexpGroups(L *lua.LState) int {
-	re := checkRegexp(L, 1)
+	re := util.Check[*regexp.Regexp](L, 1)
 	value := L.CheckString(2)
 
 	// match all groups as map
@@ -87,7 +72,7 @@ func regexpGroups(L *lua.LState) int {
 }
 
 func regexpReplaceAllFunc(L *lua.LState) int {
-	re := checkRegexp(L, 1)
+	re := util.Check[*regexp.Regexp](L, 1)
 	text := L.CheckString(2)
 	replacer := L.CheckFunction(3)
 

@@ -9,6 +9,8 @@ import (
 	"sync"
 )
 
+const libName = "util"
+
 func Lib() *luadoc.Lib {
 	const (
 		T = "T"
@@ -68,7 +70,7 @@ func Lib() *luadoc.Lib {
 	}
 
 	return &luadoc.Lib{
-		Name:        "util",
+		Name:        libName,
 		Description: "Functional helpers",
 		Funcs: []*luadoc.Func{
 			{

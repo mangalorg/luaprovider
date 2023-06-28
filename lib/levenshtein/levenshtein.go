@@ -6,9 +6,11 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
+const libName = "levenshtein"
+
 func Lib() *luadoc.Lib {
 	return &luadoc.Lib{
-		Name:        "levenshtein",
+		Name:        libName,
 		Description: "Levenshtein distance algorithm",
 		Funcs: []*luadoc.Func{
 			{

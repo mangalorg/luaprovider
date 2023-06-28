@@ -35,9 +35,11 @@ func DefaultOptions() *Options {
 	}
 }
 
+const libName = "sdk"
+
 func Lib(L *lua.LState, options *Options) *luadoc.Lib {
 	return &luadoc.Lib{
-		Name:        "sdk",
+		Name:        libName,
 		Description: `Contains various utilities for making HTTP requests, working with JSON, HTML, and more.`,
 		Libs: []*luadoc.Lib{
 			regexp.Lib(L),

@@ -4,9 +4,11 @@ import (
 	luadoc "github.com/mangalorg/luaprovider/doc"
 )
 
+const libName = "js"
+
 func Lib() *luadoc.Lib {
-	classVMValue := &luadoc.Class{
-		Name:        vmValueTypeName,
+	classValue := &luadoc.Class{
+		Name:        valueTypeName,
 		Description: "A value returned from a JavaScript VM.",
 		Methods: []*luadoc.Method{
 			{
@@ -133,7 +135,7 @@ func Lib() *luadoc.Lib {
 	}
 
 	classVM := &luadoc.Class{
-		Name:        "js_vm",
+		Name:        vmTypeName,
 		Description: "A JavaScript virtual machine. This is used to execute JavaScript code.",
 		Methods: []*luadoc.Method{
 			{
@@ -151,7 +153,7 @@ func Lib() *luadoc.Lib {
 					{
 						Name:        "value",
 						Description: "The value returned by the code.",
-						Type:        classVMValue.Name,
+						Type:        valueTypeName,
 					},
 				},
 			},
@@ -170,7 +172,7 @@ func Lib() *luadoc.Lib {
 					{
 						Name:        "value",
 						Description: "The value of the property.",
-						Type:        classVMValue.Name,
+						Type:        valueTypeName,
 					},
 				},
 			},
@@ -195,7 +197,7 @@ func Lib() *luadoc.Lib {
 	}
 
 	return &luadoc.Lib{
-		Name:        "js",
+		Name:        libName,
 		Description: "JavaScript execution.",
 		Funcs: []*luadoc.Func{
 			{
@@ -206,14 +208,14 @@ func Lib() *luadoc.Lib {
 					{
 						Name:        "vm",
 						Description: "The new JavaScript virtual machine.",
-						Type:        classVM.Name,
+						Type:        vmTypeName,
 					},
 				},
 			},
 		},
 		Classes: []*luadoc.Class{
 			classVM,
-			classVMValue,
+			classValue,
 		},
 	}
 }

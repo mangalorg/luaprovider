@@ -6,7 +6,7 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-const vmTypeName = "js_vm"
+const vmTypeName = libName + "_vm"
 
 func pushVM(L *lua.LState, vm *otto.Otto) {
 	ud := L.NewUserData()
@@ -40,7 +40,7 @@ func vmRun(L *lua.LState) int {
 		return 0
 	}
 
-	pushVMValue(L, &value)
+	util.Push(L, &value, valueTypeName)
 	return 1
 }
 
@@ -54,7 +54,7 @@ func vmGet(L *lua.LState) int {
 		return 0
 	}
 
-	pushVMValue(L, &value)
+	util.Push(L, &value, valueTypeName)
 	return 1
 }
 
