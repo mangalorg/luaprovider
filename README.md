@@ -46,11 +46,6 @@ See [SDK documentation](https://github.com/mangalorg/luaprovider/wiki/sdk.lua)
 Scripts must look like this:
 
 ```lua
----> name: Script name
----> description: Script description
----> version: v0.1.0
----> website: https://example.com
-
 function SearchMangas(query)
   return {}
 end
@@ -74,23 +69,6 @@ Notice the four required global functions
 - `MangaVolumes` - gets manga volumes. Each manga must have at least 1 volume.
 - `VolumeChapters` - gets chapters of the given volume.
 - `ChapterPages` - gets pages of the given chapter.
-
-Also, each script **must** contain the following lines:
-
-```lua
----> name: Script name
----> description: Script description
----> version: v0.1.0
----> website: https://example.com
-```
-
-Basically, `--->` indicates that this line contains script information field in
-YAML format.
-
-- `name` - Name of the script
-- `description` - Description of the script
-- `version` - Script version. It must be a valid [semver](https://semver.org/)
-  (_without_ `v` prefix)
 
 ---
 

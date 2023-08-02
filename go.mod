@@ -8,6 +8,7 @@ require (
 	github.com/cixtor/readability v1.0.0
 	github.com/go-rod/rod v0.113.3
 	github.com/ka-weihe/fast-levenshtein v0.0.0-20201227151214-4c99ee36a1ba
+	github.com/mangalorg/gopher-luadoc v0.2.2
 	github.com/mangalorg/libmangal v0.5.0
 	github.com/mvdan/xurls v1.1.0
 	github.com/philippgille/gokv v0.6.0
@@ -19,7 +20,6 @@ require (
 	github.com/yuin/gluamapper v0.0.0-20150323120927-d836955830e7
 	github.com/yuin/gopher-lua v1.1.0
 	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df
-	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (

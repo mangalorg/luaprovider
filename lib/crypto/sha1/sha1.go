@@ -2,7 +2,8 @@ package sha1
 
 import (
 	"crypto/sha1"
-	luadoc "github.com/mangalorg/luaprovider/doc"
+
+	luadoc "github.com/mangalorg/gopher-luadoc"
 	lua "github.com/yuin/gopher-lua"
 )
 

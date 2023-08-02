@@ -7,17 +7,16 @@ import (
 	"github.com/mangalorg/libmangal"
 	"github.com/philippgille/gokv"
 	"github.com/philippgille/gokv/syncmap"
-	"github.com/pkg/errors"
 	lua "github.com/yuin/gopher-lua"
-	"gopkg.in/yaml.v3"
 	"net/http"
 )
 
 var _ libmangal.ProviderLoader = (*loader)(nil)
 
 type Options struct {
-	HTTPClient *http.Client
-	HTTPStore  gokv.Store
+	HTTPClient   *http.Client
+	HTTPStore    gokv.Store
+	PackagePaths []string
 }
 
 func DefaultOptions() Options {
@@ -30,9 +29,8 @@ func DefaultOptions() Options {
 // NewLoader creates new lua provider loader for the given script.
 //
 // It won't run the script itself.
-func NewLoader(script []byte, options Options) (libmangal.ProviderLoader, error) {
-	info, err := ExtractInfo(script)
-	if err != nil {
+func NewLoader(script []byte, info libmangal.ProviderInfo, options Options) (libmangal.ProviderLoader, error) {
+	if err := info.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -41,35 +39,6 @@ func NewLoader(script []byte, options Options) (libmangal.ProviderLoader, error)
 		info:    info,
 		script:  script,
 	}, nil
-}
-
-// ExtractInfo extracts provider information from the given script.
-//
-// Information lines must start with the `--->` followed by the valid YAML fields
-func ExtractInfo(script []byte) (libmangal.ProviderInfo, error) {
-	var (
-		infoLines  [][]byte
-		infoPrefix = []byte("--->")
-	)
-
-	for _, line := range bytes.Split(script, []byte("\n")) {
-		if bytes.HasPrefix(line, infoPrefix) {
-			infoLines = append(infoLines, bytes.TrimPrefix(line, infoPrefix))
-		}
-	}
-
-	info := libmangal.ProviderInfo{}
-	err := yaml.Unmarshal(bytes.Join(infoLines, []byte("\n")), &info)
-
-	if err != nil {
-		return libmangal.ProviderInfo{}, err
-	}
-
-	if err := info.Validate(); err != nil {
-		return libmangal.ProviderInfo{}, errors.Wrap(err, "info")
-	}
-
-	return info, nil
 }
 
 type loader struct {

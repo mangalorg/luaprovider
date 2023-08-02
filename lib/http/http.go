@@ -1,10 +1,11 @@
 package http
 
 import (
-	luadoc "github.com/mangalorg/luaprovider/doc"
+	"net/http"
+
+	luadoc "github.com/mangalorg/gopher-luadoc"
 	"github.com/philippgille/gokv"
 	lua "github.com/yuin/gopher-lua"
-	"net/http"
 )
 
 const libName = "http"

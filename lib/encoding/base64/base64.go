@@ -2,7 +2,8 @@ package base64
 
 import (
 	"encoding/base64"
-	luadoc "github.com/mangalorg/luaprovider/doc"
+
+	luadoc "github.com/mangalorg/gopher-luadoc"
 	lua "github.com/yuin/gopher-lua"
 )
 

@@ -2,7 +2,8 @@ package sha256
 
 import (
 	"crypto/sha256"
-	luadoc "github.com/mangalorg/luaprovider/doc"
+
+	luadoc "github.com/mangalorg/gopher-luadoc"
 	lua "github.com/yuin/gopher-lua"
 )
 

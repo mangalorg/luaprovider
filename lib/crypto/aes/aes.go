@@ -2,7 +2,8 @@ package aes
 
 import (
 	"crypto/aes"
-	luadoc "github.com/mangalorg/luaprovider/doc"
+
+	luadoc "github.com/mangalorg/gopher-luadoc"
 	lua "github.com/yuin/gopher-lua"
 )
 

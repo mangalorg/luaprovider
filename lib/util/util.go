@@ -1,12 +1,13 @@
 package util
 
 import (
-	luadoc "github.com/mangalorg/luaprovider/doc"
+	"sync"
+
+	luadoc "github.com/mangalorg/gopher-luadoc"
 	"github.com/mangalorg/luaprovider/util"
 	"github.com/samber/lo"
 	lua "github.com/yuin/gopher-lua"
 	"golang.org/x/exp/slices"
-	"sync"
 )
 
 const libName = "util"
@@ -1167,12 +1168,12 @@ func sort(L *lua.LState) int {
 	list := checkList(L, 1)
 	fn := L.OptFunction(2, lessThan)
 
-	slices.SortFunc(list, func(i, j lua.LValue) bool {
+	slices.SortFunc(list, func(i, j lua.LValue) int {
 		L.Push(fn)
 		L.Push(i)
 		L.Push(j)
 		L.Call(2, 1)
-		return L.ToBool(-1)
+		return L.ToInt(-1)
 	})
 
 	sorted, _ := util.ToLValue(L, list)

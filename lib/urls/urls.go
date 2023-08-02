@@ -1,10 +1,11 @@
 package urls
 
 import (
-	luadoc "github.com/mangalorg/luaprovider/doc"
+	"net/url"
+
+	luadoc "github.com/mangalorg/gopher-luadoc"
 	"github.com/mangalorg/luaprovider/util"
 	lua "github.com/yuin/gopher-lua"
-	"net/url"
 )
 
 const (

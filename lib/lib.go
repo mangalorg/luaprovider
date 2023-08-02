@@ -1,7 +1,9 @@
 package lib
 
 import (
-	luadoc "github.com/mangalorg/luaprovider/doc"
+	"net/http"
+
+	luadoc "github.com/mangalorg/gopher-luadoc"
 	"github.com/mangalorg/luaprovider/lib/crypto"
 	"github.com/mangalorg/luaprovider/lib/encoding"
 	"github.com/mangalorg/luaprovider/lib/headless"
@@ -18,7 +20,6 @@ import (
 	"github.com/philippgille/gokv/syncmap"
 	"github.com/spf13/afero"
 	lua "github.com/yuin/gopher-lua"
-	"net/http"
 )
 
 type Options struct {

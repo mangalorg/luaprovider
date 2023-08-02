@@ -1,8 +1,6 @@
 package html
 
-import (
-	luadoc "github.com/mangalorg/luaprovider/doc"
-)
+import luadoc "github.com/mangalorg/gopher-luadoc"
 
 const libName = "html"
 

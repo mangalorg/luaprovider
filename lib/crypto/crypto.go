@@ -1,7 +1,7 @@
 package crypto
 
 import (
-	luadoc "github.com/mangalorg/luaprovider/doc"
+	luadoc "github.com/mangalorg/gopher-luadoc"
 	"github.com/mangalorg/luaprovider/lib/crypto/aes"
 	"github.com/mangalorg/luaprovider/lib/crypto/md5"
 	"github.com/mangalorg/luaprovider/lib/crypto/sha1"

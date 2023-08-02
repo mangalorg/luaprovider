@@ -1,9 +1,10 @@
 package time
 
 import (
-	luadoc "github.com/mangalorg/luaprovider/doc"
-	lua "github.com/yuin/gopher-lua"
 	"time"
+
+	luadoc "github.com/mangalorg/gopher-luadoc"
+	lua "github.com/yuin/gopher-lua"
 )
 
 const (

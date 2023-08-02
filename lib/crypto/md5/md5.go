@@ -2,7 +2,8 @@ package md5
 
 import (
 	"crypto/md5"
-	luadoc "github.com/mangalorg/luaprovider/doc"
+
+	luadoc "github.com/mangalorg/gopher-luadoc"
 	lua "github.com/yuin/gopher-lua"
 )
 

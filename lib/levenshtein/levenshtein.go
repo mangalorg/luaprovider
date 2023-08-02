@@ -2,7 +2,7 @@ package levenshtein
 
 import (
 	levenshtein "github.com/ka-weihe/fast-levenshtein"
-	luadoc "github.com/mangalorg/luaprovider/doc"
+	luadoc "github.com/mangalorg/gopher-luadoc"
 	lua "github.com/yuin/gopher-lua"
 )
 

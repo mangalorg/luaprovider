@@ -1,11 +1,12 @@
 package regexp
 
 import (
-	luadoc "github.com/mangalorg/luaprovider/doc"
+	"regexp"
+
+	luadoc "github.com/mangalorg/gopher-luadoc"
 	"github.com/mangalorg/luaprovider/util"
 	"github.com/mvdan/xurls"
 	lua "github.com/yuin/gopher-lua"
-	"regexp"
 )
 
 const libName = "regex"

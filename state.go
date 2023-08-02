@@ -1,7 +1,11 @@
 package luaprovider
 
 import (
+	"path/filepath"
+	"strings"
+
 	"github.com/mangalorg/luaprovider/lib"
+	"github.com/samber/lo"
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -29,6 +33,14 @@ func newState(options Options) *lua.LState {
 		HTTPClient: options.HTTPClient,
 		HTTPStore:  options.HTTPStore,
 	})
+
+	pkg := state.GetGlobal("package").(*lua.LTable)
+
+	paths := lo.Map(options.PackagePaths, func(path string, _ int) string {
+		return filepath.Join(path, "?.lua")
+	})
+
+	pkg.RawSetString("path", lua.LString(strings.Join(paths, ";")))
 
 	return state
 }
