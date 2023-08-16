@@ -2,7 +2,9 @@ package luaprovider
 
 import (
 	_ "embed"
+
 	"github.com/mangalorg/luaprovider/lib"
+	lua "github.com/yuin/gopher-lua"
 )
 
 //go:embed template.lua
@@ -26,7 +28,7 @@ func LuarcJSON() string {
 func LuaDoc() string {
 	return lib.
 		Lib(
-			newState(DefaultOptions()),
+			lua.NewState(),
 			lib.DefaultOptions(),
 		).
 		LuaDoc()

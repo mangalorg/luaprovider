@@ -5,11 +5,12 @@ import (
 	"strings"
 
 	"github.com/mangalorg/luaprovider/lib"
+	"github.com/philippgille/gokv"
 	"github.com/samber/lo"
 	lua "github.com/yuin/gopher-lua"
 )
 
-func newState(options Options) *lua.LState {
+func newState(options Options) (*lua.LState, gokv.Store, error) {
 	libs := []lua.LGFunction{
 		lua.OpenBase,
 		lua.OpenTable,
@@ -29,9 +30,14 @@ func newState(options Options) *lua.LState {
 		injectLib(state)
 	}
 
+	store, err := options.HTTPStoreProvider()
+	if err != nil {
+		return nil, nil, err
+	}
+
 	lib.Preload(state, &lib.Options{
 		HTTPClient: options.HTTPClient,
-		HTTPStore:  options.HTTPStore,
+		HTTPStore:  store,
 	})
 
 	pkg := state.GetGlobal("package").(*lua.LTable)
@@ -42,5 +48,5 @@ func newState(options Options) *lua.LState {
 
 	pkg.RawSetString("path", lua.LString(strings.Join(paths, ";")))
 
-	return state
+	return state, store, nil
 }

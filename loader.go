@@ -14,15 +14,17 @@ import (
 var _ libmangal.ProviderLoader = (*loader)(nil)
 
 type Options struct {
-	HTTPClient   *http.Client
-	HTTPStore    gokv.Store
-	PackagePaths []string
+	HTTPClient        *http.Client
+	HTTPStoreProvider func() (gokv.Store, error)
+	PackagePaths      []string
 }
 
 func DefaultOptions() Options {
 	return Options{
 		HTTPClient: &http.Client{},
-		HTTPStore:  syncmap.NewStore(syncmap.DefaultOptions),
+		HTTPStoreProvider: func() (gokv.Store, error) {
+			return syncmap.NewStore(syncmap.DefaultOptions), nil
+		},
 	}
 }
 
@@ -56,12 +58,18 @@ func (l loader) String() string {
 }
 
 func (l loader) Load(ctx context.Context) (libmangal.Provider, error) {
-	provider := provider{
+	provider := &provider{
 		info:    l.info,
 		options: l.options,
 	}
 
-	provider.state = newState(l.options)
+	state, store, err := newState(l.options)
+	if err != nil {
+		return nil, err
+	}
+
+	provider.store = store
+	provider.state = state
 	provider.state.SetContext(ctx)
 	lfunc, err := provider.state.Load(bytes.NewReader(l.script), l.info.Name)
 	if err != nil {

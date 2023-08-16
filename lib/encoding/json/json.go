@@ -8,9 +8,11 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
+const libName = "json"
+
 func Lib() *luadoc.Lib {
 	return &luadoc.Lib{
-		Name:        "json",
+		Name:        libName,
 		Description: "Provides functions for encoding and decoding JSON.",
 		Funcs: []*luadoc.Func{
 			{

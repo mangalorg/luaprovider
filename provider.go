@@ -3,21 +3,25 @@ package luaprovider
 import (
 	"context"
 	"fmt"
+	"io"
+	"net/http"
+
 	"github.com/mangalorg/libmangal"
+	"github.com/philippgille/gokv"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"github.com/yuin/gluamapper"
 	lua "github.com/yuin/gopher-lua"
-	"io"
-	"net/http"
 )
 
 var _ libmangal.Provider = (*provider)(nil)
 
 type provider struct {
+	store   gokv.Store
 	info    libmangal.ProviderInfo
 	options Options
 	state   *lua.LState
+	logger  *libmangal.Logger
 
 	fnSearchMangas,
 	fnMangaVolumes,
@@ -25,11 +29,16 @@ type provider struct {
 	fnChapterPages *lua.LFunction
 }
 
-func (p provider) String() string {
+func (p *provider) String() string {
 	return p.info.Name
 }
 
-func (p provider) Info() libmangal.ProviderInfo {
+func (p *provider) Close() error {
+	p.state.Close()
+	return p.store.Close()
+}
+
+func (p *provider) Info() libmangal.ProviderInfo {
 	return p.info
 }
 
@@ -41,7 +50,7 @@ type IntoLValue interface {
 // perform type checking and apply conversion function for each item.
 func loadItems[Input IntoLValue, Output any](
 	ctx context.Context,
-	log libmangal.LogFunc,
+	logger *libmangal.Logger,
 	state *lua.LState,
 	lfunc *lua.LFunction,
 	convert func(int, *lua.LTable) (Output, error),
@@ -69,7 +78,7 @@ func loadItems[Input IntoLValue, Output any](
 
 	var items = make([]Output, len(values))
 	for i, value := range values {
-		log(fmt.Sprintf("Parsing item %d", i))
+		logger.Log(fmt.Sprintf("Parsing item %d", i))
 		table, ok := value.(*lua.LTable)
 		if !ok {
 			return nil, errors.Wrapf(fmt.Errorf("expected table, got %s", value.Type().String()), "parsing item %d", i)
@@ -83,7 +92,7 @@ func loadItems[Input IntoLValue, Output any](
 		items[i] = item
 	}
 
-	log(fmt.Sprintf("Found %d items", len(items)))
+	logger.Log(fmt.Sprintf("Found %d items", len(items)))
 	return items, nil
 }
 
@@ -95,16 +104,19 @@ func (l luaString) IntoLValue() lua.LValue {
 	return lua.LString(l)
 }
 
-func (p provider) SearchMangas(
+func (p *provider) SetLogger(logger *libmangal.Logger) {
+	p.logger = logger
+}
+
+func (p *provider) SearchMangas(
 	ctx context.Context,
-	log libmangal.LogFunc,
 	query string,
 ) ([]libmangal.Manga, error) {
-	log(fmt.Sprintf("Searching mangas with %q", query))
+	p.logger.Log(fmt.Sprintf("Searching mangas with %q", query))
 
 	return loadItems(
 		ctx,
-		log,
+		p.logger,
 		p.state,
 		p.fnSearchMangas,
 		func(i int, table *lua.LTable) (libmangal.Manga, error) {
@@ -128,9 +140,8 @@ func (p provider) SearchMangas(
 	)
 }
 
-func (p provider) MangaVolumes(
+func (p *provider) MangaVolumes(
 	ctx context.Context,
-	log libmangal.LogFunc,
 	manga libmangal.Manga,
 ) ([]libmangal.Volume, error) {
 	m, ok := manga.(luaManga)
@@ -138,19 +149,18 @@ func (p provider) MangaVolumes(
 		return nil, fmt.Errorf("unexpected manga type: %T", manga)
 	}
 
-	return p.mangaVolumes(ctx, log, m)
+	return p.mangaVolumes(ctx, m)
 }
 
-func (p provider) mangaVolumes(
+func (p *provider) mangaVolumes(
 	ctx context.Context,
-	log libmangal.LogFunc,
 	manga luaManga,
 ) ([]libmangal.Volume, error) {
-	log(fmt.Sprintf("Fetching volumes for %q", manga.Title))
+	p.logger.Log(fmt.Sprintf("Fetching volumes for %q", manga.Title))
 
 	return loadItems(
 		ctx,
-		log,
+		p.logger,
 		p.state,
 		p.fnMangaVolumes,
 		func(_ int, table *lua.LTable) (libmangal.Volume, error) {
@@ -172,9 +182,8 @@ func (p provider) mangaVolumes(
 	)
 }
 
-func (p provider) VolumeChapters(
+func (p *provider) VolumeChapters(
 	ctx context.Context,
-	log libmangal.LogFunc,
 	volume libmangal.Volume,
 ) ([]libmangal.Chapter, error) {
 	v, ok := volume.(luaVolume)
@@ -182,19 +191,18 @@ func (p provider) VolumeChapters(
 		return nil, fmt.Errorf("unexpected volume type: %T", volume)
 	}
 
-	return p.volumeChapters(ctx, log, v)
+	return p.volumeChapters(ctx, v)
 }
 
-func (p provider) volumeChapters(
+func (p *provider) volumeChapters(
 	ctx context.Context,
-	log libmangal.LogFunc,
 	volume luaVolume,
 ) ([]libmangal.Chapter, error) {
-	log(fmt.Sprintf("Fetching chapters for volume %d", volume.Number))
+	p.logger.Log(fmt.Sprintf("Fetching chapters for volume %d", volume.Number))
 
 	return loadItems(
 		ctx,
-		log,
+		p.logger,
 		p.state,
 		p.fnVolumeChapters,
 		func(i int, table *lua.LTable) (libmangal.Chapter, error) {
@@ -219,9 +227,8 @@ func (p provider) volumeChapters(
 	)
 }
 
-func (p provider) ChapterPages(
+func (p *provider) ChapterPages(
 	ctx context.Context,
-	log libmangal.LogFunc,
 	chapter libmangal.Chapter,
 ) ([]libmangal.Page, error) {
 	c, ok := chapter.(luaChapter)
@@ -229,19 +236,18 @@ func (p provider) ChapterPages(
 		return nil, fmt.Errorf("unexpected chapter type: %T", chapter)
 	}
 
-	return p.chapterPages(ctx, log, c)
+	return p.chapterPages(ctx, c)
 }
 
-func (p provider) chapterPages(
+func (p *provider) chapterPages(
 	ctx context.Context,
-	log libmangal.LogFunc,
 	chapter luaChapter,
 ) ([]libmangal.Page, error) {
-	log(fmt.Sprintf("Fetching pages for %q", chapter.Title))
+	p.logger.Log(fmt.Sprintf("Fetching pages for %q", chapter.Title))
 
 	return loadItems(
 		ctx,
-		log,
+		p.logger,
 		p.state,
 		p.fnChapterPages,
 		func(i int, table *lua.LTable) (libmangal.Page, error) {
@@ -279,9 +285,8 @@ func (p provider) chapterPages(
 	)
 }
 
-func (p provider) GetPageImage(
+func (p *provider) GetPageImage(
 	ctx context.Context,
-	log libmangal.LogFunc,
 	page libmangal.Page,
 ) ([]byte, error) {
 	page_, ok := page.(luaPage)
@@ -289,17 +294,14 @@ func (p provider) GetPageImage(
 		return nil, fmt.Errorf("unexpected page type: %T", page)
 	}
 
-	return p.getPageImage(ctx, log, page_)
+	return p.getPageImage(ctx, page_)
 }
 
-func (p provider) getPageImage(
+func (p *provider) getPageImage(
 	ctx context.Context,
-	log libmangal.LogFunc,
 	page luaPage,
 ) ([]byte, error) {
-	log("Getting image for page")
-
-	log(fmt.Sprintf("Making HTTP GET request for %q", page.URL))
+	p.logger.Log(fmt.Sprintf("Making HTTP GET request for %q", page.URL))
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, page.URL, nil)
 	if err != nil {
 		return nil, err
@@ -319,7 +321,7 @@ func (p provider) getPageImage(
 	}
 	defer response.Body.Close()
 
-	log("Got response")
+	p.logger.Log("Got response")
 
 	if response.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", response.StatusCode)
